@@ -1,183 +1,168 @@
 import React, { useState, useContext } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, Text, Platform, Pressable } from 'react-native';
-import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { API_URL } from '@env';
+import axios from 'axios';
+import { View, TextInput, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { useForm, Controller } from "react-hook-form";
+import ProgressBar from '../components/ProgressBar'
 import { AuthContext } from '../contexts/AuthContext';
+import CustomButton from '../components/Button';
+import { useFonts, Poppins_400Regular, Poppins_600SemiBold_Italic, Poppins_700Bold } from '@expo-google-fonts/poppins' 
+
+const totalSteps = 3; // Nombre total d'étapes
 
 export default function Register() {
   const { signUp, errorMessage, resetError } = useContext(AuthContext);
   const { control, handleSubmit, setValue, formState: { errors } } = useForm({
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      birthDate: null,
       email: "",
       password: "",
+      code: Array(6).fill(''),
     },
   });
+  const [currentStep, setCurrentStep] = useState(1);
 
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-
-  const showDatePicker = () => {
-    setDatePickerVisibility(true);
+  const onSubmit = async (data) => {
+    if (currentStep === 2) {
+      try {
+        const response = await axios.post(`${API_URL}/verifyEmail`, {email: data.email})  
+        if (response.status === 200) {
+          setCurrentStep(currentStep + 1);
+        } else {
+          // Gérer les erreurs (par exemple, afficher un message)
+        }
+      } catch (error) {
+        console.error(error);
+        // Gérer les erreurs de réseau
+      }
+    } else if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      console.log(data.code);
+      data.code = data.code.join('');
+      signUp(data);
+    }
   };
+  
+  let [fontsLoaded] = useFonts({
+    Poppins_400Regular,
+    Poppins_600SemiBold_Italic,
+    Poppins_700Bold
+  });
 
-  const hideDatePicker = () => {
-    setDatePickerVisibility(false);
-  };
-
-  const handleConfirm = (date) => {
-    setValue('birthDate', date);
-    hideDatePicker();
-  };
-
-  const onSubmit = (data) => {
-    signUp(data);
-  };
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <View style={styles.inputContainer}>
-      <Controller
-        control={control}
-        rules={{ required: true }}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            placeholder="FirstName"
-            style={styles.input}
-            autoCapitalize='none'
-            onBlur={onBlur}
-            onChangeText={(text) => {
-              onChange(text);
-              resetError();
-            }}
-            value={value}
-          />
-        )}
-        name="firstName"
-      />
-      {errors.firstName && <Text>This is required.</Text>}
-
-      <Controller
-        control={control}
-        rules={{ required: true }}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            placeholder="LastName"
-            style={styles.input}
-            autoCapitalize='none'
-            onBlur={onBlur}
-            onChangeText={(text) => {
-              onChange(text);
-              resetError();
-            }}
-            value={value}
-          />
-        )}
-        name="lastName"
-      />
-      {errors.lastName && <Text>This is required.</Text>}
-
-      <Controller
-        control={control}
-        rules={{ required: true }}
-        render={({ field: { value } }) => (
-          <View>
-            <TouchableOpacity onPress={showDatePicker}>
+      
+      
+      {currentStep === 1 && (
+        <Controller
+          control={control}
+          rules={{ required: true }}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <><Text style={styles.label}>
+              Quel est ton email ?</Text>
               <TextInput
-                placeholder="Select Date"
-                style={styles.input}
-                editable={false}
-                value={value ? value.toISOString().split('T')[0] : ''}
-                onPressIn={showDatePicker}
-              />
-            </TouchableOpacity>
-            <DateTimePickerModal
-              isVisible={isDatePickerVisible}
-              mode="date"
-              onConfirm={handleConfirm}
-              onCancel={hideDatePicker}
+              placeholder="Email"
+              style={styles.input}
+              keyboardType='email-address'
+              autoCapitalize='none'
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value} /></>
+          )}
+          name="email"
+        />
+      )}
+
+      {currentStep === 2 && (
+        <Controller
+          control={control}
+          rules={{ required: true }}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <><Text style={styles.label}>
+              Créer ton mot de passe</Text>
+            <TextInput
+              placeholder="Password"
+              style={styles.input}
+              secureTextEntry
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+            /></>
+          )}
+          name="password"
+        />
+      )}
+
+      {currentStep === 3 && (
+        <View style={styles.codeInputContainer}>
+          {Array.from({ length: 6 }, (_, index) => (
+            <Controller
+              key={index}
+              control={control}
+              name={`code.${index}`}
+              rules={{ required: true }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={styles.codeInput}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  maxLength={1}
+                  keyboardType="number-pad"
+                />
+              )}
             />
-          </View>
-        )}
-        name="birthDate"
-      />
-      {errors.birthDate && <Text>Date is required.</Text>}
+          ))}
+        </View>
+      )}
 
-      <Controller
-        control={control}
-        rules={{ required: true }}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            placeholder="Email"
-            style={styles.input}
-            keyboardType='email-address'
-            autoCapitalize='none'
-            onBlur={onBlur}
-            onChangeText={(text) => {
-              onChange(text);
-              resetError();
-            }}
-            value={value}
-          />
-        )}
-        name="email"
-      />
-      {errors.email && <Text>This is required.</Text>}
+      {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
 
-      <Controller
-        control={control}
-        rules={{ maxLength: 100 }}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            placeholder="Password"
-            style={styles.input}
-            secureTextEntry
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-          />
-        )}
-        name="password"
-      />
-      {errorMessage && <Text style={{color: 'red'}}>{errorMessage}</Text> }
-
-      <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
-        <Text style={styles.text}>S'inscrire'</Text>
-      </TouchableOpacity>
+      <ProgressBar style={{fontFamily: 'Poppins_400Regular'}} currentStep={currentStep} totalSteps={totalSteps} />
+      <CustomButton text={currentStep < totalSteps ? 'Valider' : 'Sign Up'} onPress={handleSubmit(onSubmit)} />
     </View>
   );
 }
+
+// Styles pour ProgressBar, container et error à définir
+
 
 const styles = StyleSheet.create({
   inputContainer: {
     flex: 1,
     justifyContent: "center", 
+    alignItems: 'center',
     margin: 10
   },
   input: {
+    fontFamily: 'Poppins_400Regular',
     height: 40,
-    borderColor: '#014F97',
-    borderWidth: 1,
+    fontSize: 18,
+    fontStyle: 'italic',
     paddingLeft: 10,
     borderRadius: 4,
     marginVertical: 5,
   },
-  button: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#014F97',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 4,
-    marginVertical: 10,
-    marginHorizontal: 64,
-    elevation: 3,
+  label: {
+    fontFamily: 'Poppins_600SemiBold_Italic',
+    fontSize: 24,
   },
-  text: {
-    fontSize: 16,
-    lineHeight: 21,
-    fontWeight: 'bold',
-    letterSpacing: 0.25,
-    color: 'white',
+  codeInputContainer: {
+    flexDirection: 'row',
+    // autres styles si nécessaire
+  },
+  codeInput: {
+    width: 50,
+    height: 50,
+    borderRadius: 10,
+    marginHorizontal: 4,
+    backgroundColor: 'white',
+    textAlign: 'center',
+    fontSize: 20,
+    // autres styles si nécessaire
   },
 });
