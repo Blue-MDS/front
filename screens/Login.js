@@ -1,6 +1,7 @@
 import { View, TextInput, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { useState, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
+import CustomButton from '../components/Button';
 import { useForm, Controller } from "react-hook-form"
 
 export default function Login({navigation}) {
@@ -62,9 +63,8 @@ export default function Login({navigation}) {
         name="password"
       />
       {errorMessage && <Text style={{color: 'red'}}>{errorMessage}</Text> }
-      <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
-        <Text style={styles.text}>Se connecter</Text>
-      </TouchableOpacity>
+
+      <CustomButton text="Se connecter" onPress={handleSubmit(onSubmit)} />
       <TouchableOpacity style={styles.button2} onPress={() => navigation.navigate('Signup')}>
         <Text >S'inscrire</Text>
       </TouchableOpacity>
@@ -84,17 +84,6 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     borderRadius: 4,
     marginVertical: 5,
-  },
-  button: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#014F97',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 4,
-    marginVertical: 10,
-    marginHorizontal: 64,
-    elevation: 3,
   },
   button2: {
     alignItems: 'center',
