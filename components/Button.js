@@ -36,8 +36,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 0,
 
-    // Shadow pour Android (ne supporte pas les ombres multi-directionnelles, donc on utilise elevation)
-    // elevation: 6, // ajustez selon l'effet désiré
   },
   text: {
     fontSize: 18,

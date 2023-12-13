@@ -8,7 +8,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import CustomButton from '../components/Button';
 import { useFonts, Poppins_400Regular, Poppins_600SemiBold_Italic, Poppins_700Bold } from '@expo-google-fonts/poppins' 
 
-const totalSteps = 3; // Nombre total d'étapes
+const totalSteps = 3;
 
 export default function Register() {
   const { signUp, errorMessage, resetError } = useContext(AuthContext);
@@ -28,11 +28,10 @@ export default function Register() {
         if (response.status === 200) {
           setCurrentStep(currentStep + 1);
         } else {
-          // Gérer les erreurs (par exemple, afficher un message)
+          // TODO : manage errors
         }
       } catch (error) {
         console.error(error);
-        // Gérer les erreurs de réseau
       }
     } else if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
@@ -128,8 +127,6 @@ export default function Register() {
   );
 }
 
-// Styles pour ProgressBar, container et error à définir
-
 
 const styles = StyleSheet.create({
   inputContainer: {
@@ -153,7 +150,6 @@ const styles = StyleSheet.create({
   },
   codeInputContainer: {
     flexDirection: 'row',
-    // autres styles si nécessaire
   },
   codeInput: {
     width: 50,
@@ -163,6 +159,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     textAlign: 'center',
     fontSize: 20,
-    // autres styles si nécessaire
   },
 });
