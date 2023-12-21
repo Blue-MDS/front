@@ -1,45 +1,29 @@
-// CustomButton.js
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { useFonts, Poppins_400Regular, Poppins_600SemiBold_Italic, Poppins_700Bold } from '@expo-google-fonts/poppins'
 
-export default CustomButton = ({ onPress, text }) => {
-
-  let [fontsLoaded] = useFonts({
-      Poppins_400Regular,
-      Poppins_600SemiBold_Italic,
-      Poppins_700Bold
-    });
-  
-    if (!fontsLoaded) {
-      return null;
-    }
+export default CustomButton = ({ onPress, text, disabled }) => {
 
   return (
-    <TouchableOpacity style={styles.button} onPress={onPress}>
-      <Text style={styles.text}>{text}</Text>
+    <TouchableOpacity disabled={disabled} style={[styles.button, {backgroundColor: disabled ? '#EFEFEF' : '#272829'}]} onPress={onPress}>
+      <Text style={[styles.text, {color: disabled ? 'black' : 'white'}]}>{text}</Text>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   button: {
-    width: 400,
-    borderRadius: 120,
-    borderWidth: 1.5,
-    borderColor: '#00060C',
-    backgroundColor: 'white',
-    paddingVertical: 12,
     alignItems: 'center',
-    shadowColor: '#00060C',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-
+    justifyContent: 'center',
+    backgroundColor: '#272829',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 4,
+    marginVertical: 10,
+    elevation: 3,
   },
   text: {
     fontSize: 18,
-    color: 'black',
-    fontFamily: 'Poppins_700Bold',
+    fontFamily: 'Poppins_600SemiBold',
+    color: 'white',
   },
 });
