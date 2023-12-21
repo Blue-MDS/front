@@ -1,4 +1,3 @@
-// AuthContext.js
 import React, { createContext, useReducer, useEffect, useMemo } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { API_URL } from '@env';
@@ -84,9 +83,7 @@ export const AuthProvider = ({ children }) => {
     },
     signUp: async (data) => {
       try {
-        console.log(data);
         const response = await axios.post(`${API_URL}/users/subscribe`, data);
-        console.log(response.data);
         await SecureStore.setItemAsync('userToken', response.data.token);
         dispatch({ type: 'SIGN_IN', token: response.data.token });
       } catch (error) {
