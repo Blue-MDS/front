@@ -1,11 +1,14 @@
 import React, { useContext } from 'react';
-import { TouchableOpacity, Button, Text, StyleSheet, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthContext, AuthProvider } from './contexts/AuthContext';
-import Login from './screens/Login';
-import Register from './screens/Register';
-import HomeScreen from './screens/Home';
+import { OnBoardingScreen } from './screens/OnBoarding';
+import { Login } from './screens/Login';
+import { Register } from './screens/Register';
+import { HomeScreen } from './screens/Home';
+import { ProfileSteps } from './screens/ProfileSteps/ProfileSteps'
+import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_600SemiBold_Italic, Poppins_700Bold, Poppins_800ExtraBold } from '@expo-google-fonts/poppins' 
 
 function SplashScreen() {
   return (
@@ -14,18 +17,24 @@ function SplashScreen() {
     </View>
   );
 }
-const WelcomeScreen = ({ navigation }) => (
-  <View style={styles.inputContainer}>
-    <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SignIn')}>
-        <Text style={styles.text}>Commencer</Text>
-      </TouchableOpacity>
-  </View>
-);
 
 const Stack = createNativeStackNavigator();
 
 function AppNavigator() {
   const { userToken, isLoading } = useContext(AuthContext);
+
+  let [fontsLoaded] = useFonts({
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Poppins_600SemiBold_Italic,
+    Poppins_700Bold,
+    Poppins_800ExtraBold
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <NavigationContainer>
@@ -34,20 +43,31 @@ function AppNavigator() {
           <Stack.Screen name="Splash" component={SplashScreen} />
         ) : userToken == null ? (
           <>
-          <Stack.Screen name="Welcome" component={WelcomeScreen} />
+          <Stack.Screen
+            name="Onboarding"
+            component={OnBoardingScreen}
+            options={{headerShown: false}}
+          />
           <Stack.Screen
             name="SignIn"
             component={Login}
-            options={{ title: 'Sign in' }}
+            options={{headerShown: false}}
           />
           <Stack.Screen
             name="Signup"
             component={Register}
-            options={{ title: 'Sign up' }}
+            options={{headerShown: false}}
           />
         </>
         ) : (
-          <Stack.Screen name="Home" component={HomeScreen} />
+          <>
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen
+             name="ProfileSteps"
+             component={ProfileSteps}
+             options={{headerShown: false}} />
+          </>
+
         )}
       </Stack.Navigator>
     </NavigationContainer>
@@ -61,29 +81,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  inputContainer: {
-    flex: 1,
-    justifyContent: "center", 
-    margin: 10
-  },
-  button: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#014F97',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 4,
-    marginVertical: 10,
-    marginHorizontal: 64,
-    elevation: 3,
-  },
-  text: {
-    fontSize: 16,
-    lineHeight: 21,
-    fontWeight: 'bold',
-    letterSpacing: 0.25,
-    color: 'white',
-  },
-});
