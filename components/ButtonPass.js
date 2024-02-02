@@ -1,12 +1,14 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
-export default CustomButtonPass = ({ onPress, text }) => {
+export default CustomButtonPass = ({ onPress, text, style }) => {
 
   return (
-    <TouchableOpacity  style={styles.button} onPress={onPress}>
-      <Text style={styles.text}>{text}</Text>
-    </TouchableOpacity>
+    <View style={style}>
+      <TouchableOpacity  style={styles.button} onPress={onPress}>
+        <Text style={styles.text}>{text}</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
