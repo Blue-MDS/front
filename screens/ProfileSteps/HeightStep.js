@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
 
 const screenWidth = Dimensions.get('window').width;
@@ -9,6 +9,10 @@ const interval = screenWidth / 17;
 
 export const HeightSelector = ({ height, onHeightChange }) => {
   const scrollViewRef = useRef(null);
+
+  useEffect(() => {
+    onHeightChange(0);
+  }, []);
 
   const handleScroll = (event) => {
     const contentOffset = event.nativeEvent.contentOffset.x;
