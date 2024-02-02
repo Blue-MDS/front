@@ -9,6 +9,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import CustomButton from '../components/Button';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Entypo } from '@expo/vector-icons';
+import { Platform } from 'react-native';
 
 
 const totalSteps = 2;
@@ -16,7 +17,7 @@ const CELL_COUNT = 4;
 
 export const Register = ({route, navigation}) => {
   const [showPassword, setShowPassword] = useState(false);
-  const { signUp, userToken, errorMessage, resetError } = useContext(AuthContext);
+  const { signUp, errorMessage } = useContext(AuthContext);
   const [currentStep, setCurrentStep] = useState(1);
   const [codeValue, setCodeValue] = useState(Array(CELL_COUNT).fill(''));
   const ref = useBlurOnFulfill({ codeValue, cellCount: CELL_COUNT });
@@ -24,7 +25,7 @@ export const Register = ({route, navigation}) => {
     value: codeValue,
     setValue: setCodeValue,
   });
-  const { control, handleSubmit, getValues, setValue, formState: { errors, isValid } } = useForm({
+  const { control, handleSubmit, getValues, formState: { errors, isValid } } = useForm({
     mode: 'onBlur',
     defaultValues: {
       email: "",
@@ -93,14 +94,13 @@ export const Register = ({route, navigation}) => {
                 message: 'Adresse email incorrecte'
               }
             }}
-            render={({ field: { onChange, onBlur, value } }) => (
+            render={({ field: { onChange, value } }) => (
               <>
               <TextInput
                 placeholder="Email"
                 style={[styles.input, {borderColor: errors.email ? '#DA5552' : '#E1E1E1'}]}
                 keyboardType='email-address'
                 autoCapitalize='none'
-                onBlur={onBlur}
                 onChangeText={onChange}
                 value={value} />
                 {errors.email && <Text style={styles.errorMessage}>{errors.email.message}</Text>}
@@ -111,14 +111,13 @@ export const Register = ({route, navigation}) => {
             name="password"
             control={control}
             rules={{ required: 'Mot de passe requis' }}
-            render={({ field: { onChange, onBlur, value } }) => (
+            render={({ field: { onChange, value } }) => (
               <>
               <View style={[styles.input, {borderColor: errors.password ? '#DA5552' : '#E1E1E1'}]}>
                 <TextInput
                   placeholder="Password"
                   style={{ flex: 1 }}
                   secureTextEntry={!showPassword}
-                  onBlur={onBlur}
                   onChangeText={onChange}
                   value={value} />
                 <TouchableOpacity
@@ -160,7 +159,7 @@ export const Register = ({route, navigation}) => {
             control={control}
             name="code"
             rules={{ required: true, validate: value => value && value.length === CELL_COUNT }}
-            render={({ field: { onChange, onBlur } }) => (
+            render={({ field: { onChange } }) => (
               <CodeField
                 style={styles.codeInputContainer}
                 ref={ref}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Pressable, ActivityIndicator } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { API_URL } from '@env';
@@ -10,6 +10,7 @@ export const HealthIssues = ({ selectedIssues, onSelect }) => {
 
   useEffect(() => {
     const fetchHealthIssues = async () => {
+      onSelect([]);
       setIsLoading(true);
       try {
         const token = await SecureStore.getItemAsync('userToken');
@@ -51,10 +52,10 @@ export const HealthIssues = ({ selectedIssues, onSelect }) => {
   return (
     <View style={styles.container}>
       {data.map((card) => (
-        <TouchableOpacity style={[
+        <Pressable style={[
           styles.card, getCardStyle(card.health_issue)]}  key={card.health_issue} onPress={() =>handleSelectIssue(card.health_issue)}>
           <Text style={[styles.title, {color: selectedIssues.includes(card.health_issue) ? 'white' : 'black'}]}>{card.health_issue}</Text>
-        </TouchableOpacity>
+        </Pressable>
       ))}
     </View>
   )
