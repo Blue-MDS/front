@@ -16,7 +16,7 @@ export const OnBoardingScreen = ({ navigation }) => {
       <CustomButton text="Commencer" onPress={() => navigation.navigate('Signup', { nextScreen: 'ProfileSteps'})} />
       <View style={styles.inlineContainer}>
         <Text style={styles.inlineText}>Déjà un compte ?</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+        <TouchableOpacity onPress={() => navigation.navigate('SignIn', { nextScreen: 'DailyGoalConfirmation'})}>
           <Text style={styles.inlineButtonText}>Se connecter</Text>
         </TouchableOpacity>
       </View>

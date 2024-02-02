@@ -18,6 +18,10 @@ export const Login = ({navigation}) => {
   })
   const onSubmit = async (data) => {
     await signIn(data)
+    const nextScreen = route.params?.nextScreen;
+      if (nextScreen) {
+        navigation.navigate(nextScreen);
+      }
   }
 
   return (
