@@ -1,7 +1,7 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { API_URL } from '@env';
 import axios from 'axios';
-import { View, SafeAreaView, TextInput, TouchableOpacity, StyleSheet, Text, Modal } from 'react-native';
+import { View, SafeAreaView, StyleSheet, Text, Modal } from 'react-native';
 import CustomButton from '../../components/Button';
 import CustomButtonPass from '../../components/ButtonPass'
 import ProgressBar from '../../components/ProgressBar';
@@ -12,10 +12,15 @@ import { HealthIssues } from './HealthStep';
 import { PersonnalInfo } from './PersonnalInfoStep';
 import { useForm, Controller } from "react-hook-form";
 import * as SecureStore from 'expo-secure-store';
+import { AuthContext } from '../../contexts/AuthContext';
+import { updateUser, setProfileComplete, fetchUser } from '../../services/userService';
 
 const totalSteps = 5;
 
 export const ProfileSteps = ({navigation}) => {
+  const { signOut, completeProfile } = useContext(AuthContext);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [modalVisible, setModalVisible] = useState(true);
   const { control, handleSubmit, setValue, formState: { errors } } = useForm({
     defaultValues: {
       birthDate: "",
@@ -25,30 +30,66 @@ export const ProfileSteps = ({navigation}) => {
       health_issues: [],
     },
   });
-  const [currentStep, setCurrentStep] = useState(1);
-  const [modalVisible, setModalVisible] = useState(true);
 
-  const onSubmit = async (data) => {
-    if (currentStep < totalSteps) {
-      console.log(data);
-      setCurrentStep(currentStep + 1);
-    } else {
+  useEffect(() => {
+    const fetchCurrentStep = async () => {
+      // await SecureStore.deleteItemAsync('currentStep');
+      const userInfo = await SecureStore.getItemAsync('userInfo');
+      console.log(userInfo);
+      try {
+        const currentStep = await SecureStore.getItemAsync('currentStep');
+        if (currentStep) {
+          setCurrentStep(JSON.parse(currentStep));
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchCurrentStep();
+  }, []);
+
+  const createDailyGoal = async () => {
     try {
       const token = await SecureStore.getItemAsync('userToken');
-      const response = await axios.put(`${API_URL}/users/update`, data, {
+      const response = await axios.get(`${API_URL}/water/saveDailyGoal`, {
         headers: {
           token: token
         }
       })  
-      if (response.status === 200) {
-        setCurrentStep(currentStep + 1);
+      if (response.status === 201) {
+        navigation.navigate('DailyGoalConfirmation')
       } else {
         // TODO : manage errors
       }
     } catch (error) {
       console.error(error);
-    } finally {
-      navigation.navigate('Home')
+    }
+  }
+
+  const onSubmit = async (data) => {
+    if (currentStep < totalSteps) {
+      const nextStep = currentStep + 1;
+      await SecureStore.setItemAsync('currentStep', JSON.stringify(nextStep));
+      setCurrentStep(nextStep);
+    } else {
+    try {
+      const response = await updateUser(data);
+      if (response.status === 200) {
+        const profileIsCompleted = await setProfileComplete();
+        if (profileIsCompleted.data.isCompleted) {
+          const user = await fetchUser();
+          await SecureStore.setItemAsync('userInfo', JSON.stringify(user.data));
+          await SecureStore.deleteItemAsync('currentStep');
+          await completeProfile();
+          await createDailyGoal()
+        }
+      } else if (response.status === 400) {
+        console.log('error');
+        console.log('toto');
+        // TODO : manage errors
+      }
+    } catch (error) {
+      console.error(error);
     }
     }
   };
@@ -125,7 +166,7 @@ export const ProfileSteps = ({navigation}) => {
               control={control}
               render={({ field: { onChange, value } }) => (
                 <HealthIssues
-                  selectedIssues={value || []}
+                  selectedIssues={value}
                   onSelect={onChange}
                 />
               )}
@@ -162,7 +203,7 @@ export const ProfileSteps = ({navigation}) => {
       </Modal>
       <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
       <View style={styles.buttonsContainer}>
-        <CustomButtonPass text="Passer" onPress={() => setCurrentStep(currentStep + 1)} />
+        <CustomButtonPass text="Passer" onPress={() => setCurrentStep(currentStep - 1)} />
         <CustomButton text="Valider" onPress={handleSubmit(onSubmit)} />
       </View>
     </SafeAreaView>
