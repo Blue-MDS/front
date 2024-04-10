@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "front",
-    "slug": "front",
+    "slug": "blue-front",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -33,7 +33,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "24b2f0e8-5b74-44f9-8079-e2573b64b2f1"
+        "projectId": "4a0169e8-08f7-4ccd-8fa0-7caebafe64b6"
       }
     }
   }

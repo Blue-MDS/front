@@ -1,5 +1,4 @@
 import React, { useState, useContext } from 'react';
-import { API_URL } from '@env';
 import axios from 'axios';
 import { View, TextInput, TouchableOpacity, StyleSheet, Text, KeyboardAvoidingView, SafeAreaView, } from 'react-native';
 import Checkbox from 'expo-checkbox';
@@ -10,10 +9,12 @@ import CustomButton from '../components/Button';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Entypo } from '@expo/vector-icons';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 
 const totalSteps = 2;
 const CELL_COUNT = 4;
+const apiUrl = Constants.expoConfig.extra.expoPublicApiUrl;;
 
 export const Register = ({route, navigation}) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -38,7 +39,7 @@ export const Register = ({route, navigation}) => {
   const onSubmit = async (data) => {
     if (currentStep === 1) {
       try {
-        const response = await axios.post(`${API_URL}/verifyEmail`, {email: data.email})  
+        const response = await axios.post(`${apiUrl}/verifyEmail`, {email: data.email})  
         if (response.status === 200) {
           setCurrentStep(currentStep + 1);
         } else {
@@ -61,7 +62,7 @@ export const Register = ({route, navigation}) => {
 
   const reSendVerificationCode = async () => {
     try {
-      const response = await axios.post(`${API_URL}/verifyEmail`, {email: getValues().email})  
+      const response = await axios.post(`${apiUrl}/verifyEmail`, {email: getValues().email})  
         if (response.status === 200) {
           console.log('success');
         } else {

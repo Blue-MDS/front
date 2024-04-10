@@ -32,7 +32,7 @@ Before starting the project, ensure you have the environment variables set up by
 
 ***Expo settings***
 
-`API_URL` - the URL to your back-end
+`EXPO_PUBLIC_API_URL` - the URL to your back-end
 
 ### 📱 Running Front-End
 To run the app on your local machine or emulator, use:

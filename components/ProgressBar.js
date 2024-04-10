@@ -24,6 +24,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 8,
     marginHorizontal: 5,
+    borderRadius: 8,
   },
   activeStep: {
     backgroundColor: 'black',

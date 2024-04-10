@@ -5,10 +5,10 @@ export const ObjectifBar = ({ dailyGoal, totalConsumption }) => {
   const progress = dailyGoal && totalConsumption ? (totalConsumption / dailyGoal) * 100 : 0;
   const clampedProgress = Math.min(progress, 100);
 
-  const bubbleWidth = 50; // Définir la largeur de la bulle
+  const bubbleWidth = 50;
   let bubbleLeft = `${clampedProgress}%`;
   if (clampedProgress < (bubbleWidth / 2)) {
-    bubbleLeft = '0%'; // Garder la bulle dans la vue quand le progrès est très faible
+    bubbleLeft = '0%';
   }
 
   return (

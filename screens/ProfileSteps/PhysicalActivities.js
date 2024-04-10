@@ -36,15 +36,14 @@ export const PhysicalActivities = ({ selectedActivity, onSelect }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
     justifyContent: 'center',
     marginTop: 65,
     gap: 24,
   },
   card: {
-    width: 170,
-    height: 200,
+    width: '100%',
+    height: 100,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 6,

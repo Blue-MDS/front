@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
 
 const screenWidth = Dimensions.get('window').width;
@@ -9,6 +9,14 @@ const interval = screenWidth / 17;
 
 export const WeightSelector = ({ weight, onWeightChange }) => {
   const scrollViewRef = useRef(null);
+
+  const scrollToPosition = (weight - minWeight) * interval;
+
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({ x: scrollToPosition, animated: false });
+    }
+  }, []);
 
   const handleScroll = (event) => {
     const contentOffset = event.nativeEvent.contentOffset.x;

@@ -10,8 +10,12 @@ const interval = screenWidth / 17;
 export const HeightSelector = ({ height, onHeightChange }) => {
   const scrollViewRef = useRef(null);
 
+  const scrollToPosition = (height - minHeight) * interval;
+
   useEffect(() => {
-    onHeightChange(0);
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({ x: scrollToPosition, animated: false });
+    }
   }, []);
 
   const handleScroll = (event) => {

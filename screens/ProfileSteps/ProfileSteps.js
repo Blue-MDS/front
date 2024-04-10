@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { API_URL } from '@env';
 import axios from 'axios';
 import { View, SafeAreaView, StyleSheet, Text, Modal } from 'react-native';
 import CustomButton from '../../components/Button';
@@ -14,8 +13,10 @@ import { useForm, Controller } from "react-hook-form";
 import * as SecureStore from 'expo-secure-store';
 import { AuthContext } from '../../contexts/AuthContext';
 import { updateUser, setProfileComplete, fetchUser } from '../../services/userService';
+import Constants from 'expo-constants';
 
 const totalSteps = 5;
+const apiUrl = Constants.expoConfig.extra.expoPublicApiUrl;;
 
 export const ProfileSteps = ({navigation}) => {
   const { signOut, completeProfile } = useContext(AuthContext);
@@ -33,6 +34,7 @@ export const ProfileSteps = ({navigation}) => {
 
   useEffect(() => {
     const fetchCurrentStep = async () => {
+      await completeProfile();
       // await SecureStore.deleteItemAsync('currentStep');
       const userInfo = await SecureStore.getItemAsync('userInfo');
       console.log(userInfo);
@@ -51,7 +53,7 @@ export const ProfileSteps = ({navigation}) => {
   const createDailyGoal = async () => {
     try {
       const token = await SecureStore.getItemAsync('userToken');
-      const response = await axios.get(`${API_URL}/water/saveDailyGoal`, {
+      const response = await axios.get(`${apiUrl}/water/saveDailyGoal`, {
         headers: {
           token: token
         }

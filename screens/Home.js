@@ -5,7 +5,6 @@ import { WaterBottle } from '../components/Bottle';
 import WaterConsumptionHistogram from '../components/Histogram';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
-import { API_URL } from '@env';
 import { fetchDailyGoal } from '../services/waterService';
 
 
@@ -23,6 +22,7 @@ export const HomeScreen = () => {
         const today = new Date().toLocaleDateString();
         const dailyGoalDate = await SecureStore.getItemAsync('dailyGoalDate');
         const storedDailyGoal = await SecureStore.getItemAsync('dailyGoal');
+        console.log('dailyGoalDate:', dailyGoalDate, 'storedDailyGoal:', storedDailyGoal);
         if (storedDailyGoal === null && dailyGoalDate === null){
           const response = await fetchDailyGoal();
           if (response.data.length) {

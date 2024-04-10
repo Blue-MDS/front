@@ -1,8 +1,10 @@
 import React, { createContext, useReducer, useEffect, useMemo } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import { API_URL } from '@env';
 import axios from 'axios';
 import { checkProfileCompletion } from '../services/userService';
+import Constants from 'expo-constants';
+
+const apiUrl = Constants.expoConfig.extra.expoPublicApiUrl;;
 
 export const AuthContext = createContext();
 
@@ -73,7 +75,6 @@ export const AuthProvider = ({ children }) => {
       let userToken, isProfileComplete, isDailyGoalAccepted;
       try {
         userToken = await SecureStore.getItemAsync('userToken');
-        console.log(await SecureStore.getItemAsync('userInfo'));
         isProfileComplete = await SecureStore.getItemAsync('userInfo') ? JSON.parse(await SecureStore.getItemAsync('userInfo')).profile_complete : false;
         isDailyGoalAccepted = await SecureStore.getItemAsync('isDailyGoalAccepted') === 'true';
       } catch (e) {
@@ -90,7 +91,8 @@ export const AuthProvider = ({ children }) => {
   const authContext = useMemo(() => ({
     signIn: async (data) => {
       try {
-        const response = await axios.post(`${API_URL}/users/login`, data);
+        console.log(`${apiUrl}/users/login`);
+        const response = await axios.post(`${apiUrl}/users/login`, data);
         await SecureStore.setItemAsync('userToken', response.data.token);
         const userInfo = JSON.stringify(response.data.user);
         await SecureStore.setItemAsync('userInfo', userInfo);
@@ -110,11 +112,12 @@ export const AuthProvider = ({ children }) => {
       await SecureStore.deleteItemAsync('profileIsCompleted');
       await SecureStore.deleteItemAsync('isDailyGoalAccepted');
       await SecureStore.deleteItemAsync('currentStep');
+      await SecureStore.deleteItemAsync('userTeam');
       dispatch({ type: 'SIGN_OUT' })
     },
     signUp: async (data) => {
       try {
-        const response = await axios.post(`${API_URL}/users/subscribe`, data);
+        const response = await axios.post(`${apiUrl}/users/subscribe`, data);
         await SecureStore.setItemAsync('userToken', response.data.token);
         const userInfo = JSON.stringify(response.data.user);
         await SecureStore.setItemAsync('userInfo', userInfo);

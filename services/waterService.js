@@ -1,10 +1,12 @@
 import axios from 'axios';
-import { API_URL } from '@env';
 import * as SecureStore from 'expo-secure-store';
+import Constants from 'expo-constants';
+
+const apiUrl = Constants.expoConfig.extra.expoPublicApiUrl;;
 
 export const fetchTotalConsumption = async () => {
   const token = await SecureStore.getItemAsync('userToken');
-  return axios.get(`${API_URL}/water/totalConsumption`, {
+  return axios.get(`${apiUrl}/water/totalConsumption`, {
     headers: {
       token: token
     }
@@ -13,7 +15,7 @@ export const fetchTotalConsumption = async () => {
 
 export const fetchDailyGoal = async () => {
   const token = await SecureStore.getItemAsync('userToken');
-  return axios.get(`${API_URL}/water/dailyGoal`, {
+  return axios.get(`${apiUrl}/water/dailyGoal`, {
     headers: {
       token: token
     }
@@ -22,7 +24,7 @@ export const fetchDailyGoal = async () => {
 
 export const recordConsumption = async (quantity) => {
   const token = await SecureStore.getItemAsync('userToken');
-  return axios.post(`${API_URL}/water/record`, {quantity}, {
+  return axios.post(`${apiUrl}/water/record`, {quantity}, {
     headers: {
       token: token
     }
@@ -32,7 +34,7 @@ export const recordConsumption = async (quantity) => {
 export const updateDailyGoal = async (newDailyGoal) => {
   console.log(newDailyGoal);
   const token = await SecureStore.getItemAsync('userToken');
-  return axios.put(`${API_URL}/water/updateDailyGoal`, {newDailyGoal}, {
+  return axios.put(`${apiUrl}/water/updateDailyGoal`, {newDailyGoal}, {
     headers: {
       token: token
     }

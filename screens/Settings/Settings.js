@@ -1,4 +1,3 @@
-// Dans SettingsScreen.js
 import React from 'react';
 import { useContext } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, SectionList, StyleSheet } from 'react-native';
@@ -11,7 +10,7 @@ const SettingsScreen = ({ navigation }) => {
   const DATA = [
     {
       title: "Profil",
-      data: ["Paramètres du profil",],
+      data: ["Profile",],
     },
     {
       title: "Objectif",
