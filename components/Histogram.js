@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Dimensions, StyleSheet, TouchableOpacity, Text as RText } from 'react-native';
-import { API_URL } from '@env';
 import * as SecureStore from 'expo-secure-store';
 import Svg, { G, Rect, Text, Line } from 'react-native-svg';
 import { AntDesign } from '@expo/vector-icons';
 import * as d3 from 'd3';
 import CustomButton from './Button';
 import axios from 'axios';
+import Constants from 'expo-constants';
+
+const apiUrl = Constants.expoConfig.extra.expoPublicApiUrl;
 
 const WaterConsumptionHistogram = () => {
   const [d3Data, setD3Data] = useState([]);
@@ -114,12 +116,12 @@ const WaterConsumptionHistogram = () => {
       const previousDay = new Date(selectedDate);
       previousDay.setDate(previousDay.getDate() - 1);
       setSelectedDate(previousDay);
-      fetchDatas(previousDay); // Appel de fetchDatas avec la nouvelle date
+      fetchDatas(previousDay);
     } else if (period === 'week') {
       const previousWeek = getPreviousWeek(selectedDate);
       setWeekRange(previousWeek);
-      setSelectedDate(previousWeek.start); // Utiliser le début de la semaine précédente
-      fetchDatas(previousWeek.start); // Appel de fetchDatas avec la nouvelle date
+      setSelectedDate(previousWeek.start);
+      fetchDatas(previousWeek.start);
     }
   };
   
@@ -165,7 +167,7 @@ const WaterConsumptionHistogram = () => {
 
     try {
       const token = await SecureStore.getItemAsync('userToken');
-      const response = await axios.get(`${API_URL}/water${endpoint}`, {
+      const response = await axios.get(`${apiUrl}/water${endpoint}`, {
         headers: { token: token },
         params
       });
@@ -298,7 +300,8 @@ const WaterConsumptionHistogram = () => {
       justifyContent: 'center',
       backgroundColor: 'white',
       paddingVertical: 20,
-      marginBottom: 20
+      marginBottom: 20,
+      marginTop: 40,
     },
     buttonsGroup: {
       flexDirection: 'row',

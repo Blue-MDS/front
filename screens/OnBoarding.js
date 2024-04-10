@@ -52,6 +52,6 @@ const styles = StyleSheet.create({
   },
   inlineButtonText: {
     fontFamily: 'Poppins_600SemiBold',
-    color: '#1F1F1F',
+    color: 'blue',
   },
 });

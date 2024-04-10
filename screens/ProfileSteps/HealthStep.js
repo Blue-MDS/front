@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, Pressable, ActivityIndicator } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { API_URL } from '@env';
+import Constants from 'expo-constants';
+
+const apiUrl = Constants.expoConfig.extra.expoPublicApiUrl;;
 
 export const HealthIssues = ({ selectedIssues, onSelect }) => {
   const [data, setData] = useState([]);
@@ -14,7 +16,7 @@ export const HealthIssues = ({ selectedIssues, onSelect }) => {
       setIsLoading(true);
       try {
         const token = await SecureStore.getItemAsync('userToken');
-        const response = await axios.get(`${API_URL}/healthIssues`, {
+        const response = await axios.get(`${apiUrl}/healthIssues`, {
           headers: {
             token: token
           }

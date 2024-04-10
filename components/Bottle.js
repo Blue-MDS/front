@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, PanResponder, StyleSheet, Text, Image, Pressable } from 'react-native';
+import { View, StyleSheet, Text, Pressable } from 'react-native';
 import Rive from 'rive-react-native';
-import cursorImage from '../assets/cursor.png';
 import { fetchTotalConsumption, fetchDailyGoal, recordConsumption } from '../services/waterService';
 import { AntDesign } from '@expo/vector-icons';
 import { ObjectifBar } from './ObjectifBar';
@@ -10,16 +9,12 @@ import CustomButton from './Button';
 import CustomButtonPass from './ButtonPass';
 
 export const WaterBottle = ({ signOut, toggleScroll }) => {
-  const riveAnimationHeight = 350;
   const riveRef = useRef(null);
   const [littres, setLittres] = useState(0);
   const [initialLittres, setInitialLittres] = useState(0);
-  const cursorYRef = useRef(350);
-  const [cursorY, setCursorY] = useState(350);
-  const initialYRef = useRef(riveAnimationHeight);
-  const dailyGoalRef = useRef(null);
+  const [intervalId, setIntervalId] = useState(null);
   const [isChanging, setIsChanging] = useState(false);
-  const minCursorYRef = useRef(riveAnimationHeight);
+  const [dailyGoal, setDailyGoal] = useState(0);
 
   useEffect(() => {
     const initialize = async () => {
@@ -27,16 +22,9 @@ export const WaterBottle = ({ signOut, toggleScroll }) => {
         const response = await fetchTotalConsumption();
         if (response.status === 200) {
           const totalConsumption = parseFloat(response.data.waterConsumptions);
-          const toto = await SecureStore.getItemAsync('dailyGoal');
-          dailyGoalRef.current = parseFloat(toto);
-          const riveValue = (totalConsumption * 100 / dailyGoalRef.current)
-          const cursorRangeHeight = cursorRange.max - cursorRange.min;
-          const cursorPosition = cursorRangeHeight - (cursorRangeHeight * riveValue / 100);
+          const fetchedDailyGoal = parseFloat(await SecureStore.getItemAsync('dailyGoal'));
+          setDailyGoal(fetchedDailyGoal);
           setLittres(totalConsumption);
-          setCursorY(cursorPosition);
-          cursorYRef.current = cursorPosition;
-          minCursorYRef.current = cursorPosition;
-          riveRef.current?.setInputState('percentage', 'percentage', riveValue);
         } else {
           console.log('error');
         }
@@ -47,6 +35,33 @@ export const WaterBottle = ({ signOut, toggleScroll }) => {
     }
     initialize();
   }, []);
+
+  useEffect(() => {
+    if (dailyGoal > 0 && littres >= 0) {
+      const riveValue = (littres * 100 / dailyGoal);
+      riveRef.current?.setInputState('percentage', 'percentage', riveValue);
+    }
+  }, [dailyGoal, littres]);
+
+  const modifyLittres = (amount) => {
+    if (littres + amount >= 0.000) {
+      setLittres(littres + amount);
+      console.log(dailyGoal);
+      riveRef.current?.setInputState('percentage', 'percentage', ((littres + amount) * 100 / dailyGoal));
+    }
+  };
+
+  const handlePressIn = (modifier) => {
+    const id = setInterval(() => modifyLittres(modifier), 100);
+    setIntervalId(id);
+  };
+
+  const handlePressOut = () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
+  };
 
   const handlePress = () => {
     if (!isChanging) {
@@ -59,15 +74,6 @@ export const WaterBottle = ({ signOut, toggleScroll }) => {
       }
       setIsChanging(false);
     }
-  };
-
-  const cancelChange = () => {
-    setIsChanging(false);
-    setLittres(initialLittres);
-    cursorYRef.current = minCursorYRef.current;
-    initialYRef.current = minCursorYRef.current;
-    setCursorY(minCursorYRef.current);
-    riveRef.current?.setInputState('percentage', 'percentage', (initialLittres * 100 / dailyGoalRef.current));
   };
 
   const recordNewConsumption = async (quantity) => {
@@ -83,43 +89,11 @@ export const WaterBottle = ({ signOut, toggleScroll }) => {
     }
   }
 
-
-  const cursorRange = {
-    min: 0,
-    max: riveAnimationHeight - 22,
-  };
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderGrant: (event, gestureState) => {
-        toggleScroll(false);
-        initialYRef.current = cursorYRef.current;
-        setIsChanging(true);
-      },
-      onPanResponderMove: (event, gestureState) => {
-        toggleScroll(true);
-        const displacement = gestureState.dy;
-        let newY = initialYRef.current + displacement;
-        newY = Math.min(newY, minCursorYRef.current);
-        newY = Math.max(cursorRange.min, Math.min(newY, cursorRange.max));
-        cursorYRef.current = newY;
-        setCursorY(newY); 
-        if (dailyGoalRef.current) {
-          const riveValue = (dailyGoalRef.current * (1 - newY / riveAnimationHeight) * 100);
-          setLittres(riveValue / 100);
-          riveRef.current?.setInputState('percentage', 'percentage', riveValue / dailyGoalRef.current);
-        }
-      },
-      onPanResponderRelease: () => {
-        console.log('cursorY:', cursorYRef.current, 'initialY:', initialYRef.current);
-      },
-    })
-  ).current;
-
-  const cursorStyle = {
-    ...styles.cursor,
-    top: cursorY,
+  const cancel = () => {
+    setIsChanging(false);
+    setLittres(initialLittres);
+    riveRef.current?.setInputState('percentage', 'percentage', (initialLittres));
+    toggleScroll(true);
   };
 
   const formatDate = () => {
@@ -142,36 +116,37 @@ export const WaterBottle = ({ signOut, toggleScroll }) => {
       <View style={styles.stats}>
         <Text style={styles.bigTitle}>{littres.toFixed(2)}L</Text>
         <Text style={styles.subtitle}>sur</Text>
-        <Text style={styles.bigTitle}>{dailyGoalRef.current ? dailyGoalRef.current.toFixed(2) : '0.0'}L</Text>
+        <Text style={styles.bigTitle}>{dailyGoal ? dailyGoal.toFixed(2) : '0.0'}L</Text>
       </View>
-      <ObjectifBar dailyGoal={dailyGoalRef.current} totalConsumption={littres} />
-      <View style={styles.animationContainer}>
+      <ObjectifBar dailyGoal={dailyGoal} totalConsumption={littres} />
+      <View style={styles.animationAndControls}>
         <Rive
           load
           ref={riveRef}
           stateMachineName='controllable'
-          resourceName="blue_water7"
+          resourceName="blue_water4"
           style={{ width: 350, height: 350 }}
         />
-       {isChanging && (
-        <Image
-        source={cursorImage}
-        style={[styles.cursorContainer, cursorStyle]}
-        {...panResponder.panHandlers}
-      />)}
-      </View>
-      <View style={styles.pressableContainer}>
-        {isChanging ? (
-          <>
-            <CustomButton style={styles.btn} onPress={handlePress} text="Valider" />
-            <CustomButtonPass style={styles.btn} onPress={cancelChange} text="Annuler" />
-          </>
-        ) : (
-          <Pressable onPress={handlePress}>
-            <AntDesign name="pluscircle" size={32} color="black" />
+        <View style={styles.controls}>
+          {isChanging ? (
+            <><Pressable onPressIn={() => handlePressIn(0.01)} onPressOut={handlePressOut} style={styles.button}>
+              <AntDesign name="plus" size={24} color="black" />
+            </Pressable><Pressable onPressIn={() => handlePressIn(-0.01)} onPressOut={handlePressOut} style={styles.button}>
+                <AntDesign name="minus" size={24} color="black" />
+              </Pressable></>
+          ) : (
+            <Pressable onPress={handlePress} style={styles.button}>
+            <AntDesign name="plus" size={24} color="black" />
           </Pressable>
-        )}
+          )}
+        </View>
       </View>
+      {isChanging && (
+        <View style={styles.buttonContainer}>
+        <CustomButtonPass style={styles.btn} text="Annuler" onPress={cancel} />
+        <CustomButton style={styles.btn} text="Valider" onPress={handlePress} />
+      </View>
+      )}
     </View>
   );
 };
@@ -188,16 +163,30 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_600SemiBold',
     color: '#1F1F1F'
   },
-  animationContainer: {
+  animationAndControls: {
+    marginTop: 20,
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
+  },
+  controls: {
+    position: 'absolute',
+    right: 20,
+    height: 350,
+    justifyContent: 'space-around',
+  },
+  button: {
+    backgroundColor: '#E0E0E0',
+    padding: 10,
+    borderRadius: 50,
+    marginBottom: 10,
+  },
+  buttonText: {
+    color: 'white',
   },
   stats : {
     marginTop: 20,
     marginBottom: 10,
-    textAlign: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -207,11 +196,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_700Bold',
     color: '#1F1F1F'
   },
-  pressableContainer: {
+  buttonContainer: {
     flexDirection: 'row',
-    marginVertical: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 20,
   },
   subtitle: {
     fontSize: 16,
@@ -219,16 +208,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginHorizontal: 8,
   },
-  cursorContainer: {
-    position: 'absolute',
-    marginLeft: -15,
-  },
-  cursor: {
-    width: 250,
-    resizeMode: 'contain',
-  },
   btn: {
     marginHorizontal: 10,
-  }
-
+  },
 });
