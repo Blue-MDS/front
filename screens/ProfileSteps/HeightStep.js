@@ -7,16 +7,16 @@ const minHeight = 0;
 const maxHeight = 230;
 const interval = screenWidth / 17;
 
-export const HeightSelector = ({ height, onHeightChange }) => {
+export const HeightSelector = ({ height, onHeightChange, defaultHeight }) => {
   const scrollViewRef = useRef(null);
-
-  const scrollToPosition = (height - minHeight) * interval;
+  const initialHeight = defaultHeight ? defaultHeight : height;
+  const scrollToPosition = (initialHeight - minHeight) * interval;
 
   useEffect(() => {
     if (scrollViewRef.current) {
       scrollViewRef.current.scrollTo({ x: scrollToPosition, animated: false });
     }
-  }, []);
+  }, [scrollToPosition]);
 
   const handleScroll = (event) => {
     const contentOffset = event.nativeEvent.contentOffset.x;
@@ -26,7 +26,10 @@ export const HeightSelector = ({ height, onHeightChange }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.selectedHeight}>{`${height} cm`}</Text>
+      <Text>
+        <Text style={styles.selectedHeight}>{`${height}`}</Text>
+        <Text style={styles.unity}>cm</Text>
+      </Text>
       <View style={styles.rulerContainer}>
         <ScrollView
           ref={scrollViewRef}
@@ -93,6 +96,11 @@ const styles = StyleSheet.create({
     height: 54,
     backgroundColor: 'black',
   },
+  unity: {
+    fontSize: 20,
+    fontFamily: 'Poppins_500Medium',
+    marginLeft: 10,
+  },
   indicator: {
     position: 'absolute',
     top: '50%',
@@ -101,5 +109,12 @@ const styles = StyleSheet.create({
     width: 2,
     height: 100,
     backgroundColor: 'black',
+  },
+  markText: {
+    fontSize: 14,
+    fontFamily: 'Poppins_400Regular',
+    color: '#999A9A',
+    paddingTop: 5,
+    width: 30,
   },
 });

@@ -1,14 +1,21 @@
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const ProgressBar = ({ currentStep, totalSteps }) => {
+  const stepWidth = Math.max(100 / totalSteps, 15);
 
   return (
     <View style={styles.container}>
       {Array.from({ length: totalSteps }).map((_, index) => (
         <View key={index} 
-        style={[ styles.step, index + 1 === currentStep ? styles.activeStep : styles.inactiveStep ]} />
-      ))}   
+          style={[
+            styles.step,
+            { width: `${stepWidth}%` },
+            index === currentStep ? styles.activeStep : styles.inactiveStep
+          ]}
+        />
+      ))}
     </View>
   );
 };
@@ -21,13 +28,12 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   step: {
-    width: 64,
     height: 8,
-    marginHorizontal: 5,
+    marginHorizontal: 2,
     borderRadius: 8,
   },
   activeStep: {
-    backgroundColor: 'black',
+    backgroundColor: '#1F1F1F',
   },
   inactiveStep: {
     backgroundColor: '#e0e0e0',

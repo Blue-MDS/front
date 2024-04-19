@@ -1,32 +1,43 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, PixelRatio } from 'react-native';
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
+
+const fontScale = PixelRatio.getFontScale();
+const getFontSize = size => size / fontScale;
+const { width, height } = Dimensions.get('window');
 
 const cardContent = [
   {
-    title: 'sédentaire',
+    title: 'Sédentaire',
     subtitle: 'moins de 30 minutes'
   },
   {
-    title: 'activité légère',
+    title: 'Activité légère',
     subtitle: 'en moyenne 30 minutes'
   },
   {
-    title: 'actif',
+    title: 'Actif',
     subtitle: 'entre 1h et 1h 30 minutes'
   },
   {
-    title: 'très actif',
+    title: 'Très actif',
     subtitle: 'plus de 1h 30 minutes'
   }
 ];
+
+const scaleFontSize = (fontSize) => {
+  const scale = width / 320; // prenez 320 comme base de la largeur d'écran minimum comme iPhone SE
+  const newSize = Math.round(fontSize * scale);
+  return newSize;
+};
 
 export const PhysicalActivities = ({ selectedActivity, onSelect }) => {
   return (
     <View style={styles.container}>
       {cardContent.map((card) => (
-        <TouchableOpacity style={[styles.card, selectedActivity === card.title ? styles.selectedCard : styles.unselectedCard]} onPress={() => onSelect(card.title)} key={card.title}>
-          <Text style={[styles.title, {color: selectedActivity === card.title ? 'white' : 'black'}]}>{card.title}</Text>
-          <Text style={[styles.subtitle, {color: selectedActivity === card.title ? 'white' : '#474747'}]}>{card.subtitle}</Text>
+        <TouchableOpacity style={[styles.card, selectedActivity === card.title.toLocaleLowerCase() ? styles.selectedCard : styles.unselectedCard]} onPress={() => onSelect(card.title.toLowerCase())} key={card.title}>
+          <Text style={[styles.title, {color: selectedActivity === card.title.toLocaleLowerCase() ? 'white' : 'black'}]}>{card.title}</Text>
+          <Text style={[styles.subtitle, {color: selectedActivity === card.title.toLocaleLowerCase() ? 'white' : '#474747'}]}>{card.subtitle}</Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -38,16 +49,15 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     justifyContent: 'center',
-    marginTop: 65,
-    gap: 24,
+    paddingHorizontal: 20,
   },
   card: {
     width: '100%',
-    height: 100,
+    height: hp('12%'),
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 6,
-    paddingHorizontal: 5,
+    marginVertical: 8,
     shadowColor: 'rgba(0, 0, 0, 0.13)',
     shadowOffset: { width: 0, height: 1.6 },
     shadowOpacity: 0.23,
@@ -58,15 +68,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
   },
   unselectedCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#EFEFEF',
   },
   title: {
     fontFamily: 'Poppins_500Medium',
-    fontSize: 20
+    fontSize: hp('2.2%'),
   },
   subtitle: {
     fontFamily: 'Poppins_400Regular',
-    fontSize: 14,
+    fontSize: hp('1.7%'),
     textAlign: 'center'
   }
 });

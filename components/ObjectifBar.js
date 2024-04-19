@@ -6,9 +6,11 @@ export const ObjectifBar = ({ dailyGoal, totalConsumption }) => {
   const clampedProgress = Math.min(progress, 100);
 
   const bubbleWidth = 50;
-  let bubbleLeft = `${clampedProgress}%`;
-  if (clampedProgress < (bubbleWidth / 2)) {
+  let bubbleLeft = clampedProgress < 25 ? `${Math.max(clampedProgress - (bubbleWidth / (100 * 2)), 0)}%` : `${clampedProgress}%`;
+  if (clampedProgress < (bubbleWidth / (100 * 2))) {
     bubbleLeft = '0%';
+  } else if (clampedProgress > 100 - (bubbleWidth / (100 * 2))) {
+    bubbleLeft = `${100 - (bubbleWidth / 100)}%`;
   }
 
   return (

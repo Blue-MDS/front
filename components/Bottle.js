@@ -1,66 +1,53 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, Text, Pressable } from 'react-native';
+import React, { useState, useRef, useEffect, useContext } from 'react';
+import { View, StyleSheet, Text, Pressable, SafeAreaView, Image } from 'react-native';
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
+import { WaterContext } from '../contexts/ConsumptionContext';
 import Rive from 'rive-react-native';
-import { fetchTotalConsumption, fetchDailyGoal, recordConsumption } from '../services/waterService';
+import { recordConsumption } from '../services/waterService';
 import { AntDesign } from '@expo/vector-icons';
 import { ObjectifBar } from './ObjectifBar';
-import * as SecureStore from 'expo-secure-store';
 import CustomButton from './Button';
 import CustomButtonPass from './ButtonPass';
+import glassWater from '../assets/glass-water.png';
 
-export const WaterBottle = ({ signOut, toggleScroll }) => {
+export const WaterBottle = ({ toggleScroll}) => {
+  const { littres, setLittres, dailyGoal } = useContext(WaterContext);
+  const [currentLittres, setCurrentLittres] = useState(littres);
   const riveRef = useRef(null);
-  const [littres, setLittres] = useState(0);
   const [initialLittres, setInitialLittres] = useState(0);
-  const [intervalId, setIntervalId] = useState(null);
   const [isChanging, setIsChanging] = useState(false);
-  const [dailyGoal, setDailyGoal] = useState(0);
+
+  const drops = Math.round(littres * 6.666666666666667);
 
   useEffect(() => {
-    const initialize = async () => {
-      try {
-        const response = await fetchTotalConsumption();
-        if (response.status === 200) {
-          const totalConsumption = parseFloat(response.data.waterConsumptions);
-          const fetchedDailyGoal = parseFloat(await SecureStore.getItemAsync('dailyGoal'));
-          setDailyGoal(fetchedDailyGoal);
-          setLittres(totalConsumption);
-        } else {
-          console.log('error');
-        }
-        
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    initialize();
-  }, []);
-
-  useEffect(() => {
+    console.log('litres', littres);
     if (dailyGoal > 0 && littres >= 0) {
+      setCurrentLittres(littres);
       const riveValue = (littres * 100 / dailyGoal);
-      riveRef.current?.setInputState('percentage', 'percentage', riveValue);
+      riveRef.current?.setInputState('controllable', 'percentage', riveValue);
     }
   }, [dailyGoal, littres]);
 
   const modifyLittres = (amount) => {
-    if (littres + amount >= 0.000) {
-      setLittres(littres + amount);
-      console.log(dailyGoal);
-      riveRef.current?.setInputState('percentage', 'percentage', ((littres + amount) * 100 / dailyGoal));
+    const newLittres = currentLittres + amount;
+    if (newLittres > dailyGoal) {
+      console.log('newLittres > dailyGola', newLittres);
+      setCurrentLittres(dailyGoal);
+      riveRef.current?.setInputState('controllable', 'percentage', 100);
+    } else if (newLittres >= initialLittres) {
+      console.log('newLittres >= initialLittres', newLittres);
+      setCurrentLittres(newLittres);
+      riveRef.current?.setInputState('controllable', 'percentage', (newLittres * 100 / dailyGoal));
+    } else {
+      console.log('newLittres', initialLittres);
+      setCurrentLittres(initialLittres);
+      riveRef.current?.setInputState('controllable', 'percentage', (initialLittres * 100 / dailyGoal));
     }
   };
-
+  
   const handlePressIn = (modifier) => {
-    const id = setInterval(() => modifyLittres(modifier), 100);
-    setIntervalId(id);
-  };
-
-  const handlePressOut = () => {
-    if (intervalId) {
-      clearInterval(intervalId);
-      setIntervalId(null);
-    }
+    console.log('modifier', modifier);
+    modifyLittres(modifier)
   };
 
   const handlePress = () => {
@@ -68,19 +55,21 @@ export const WaterBottle = ({ signOut, toggleScroll }) => {
       setInitialLittres(littres);
       setIsChanging(true);
     } else {
-      const additionalQuantity = littres - initialLittres;
+      const additionalQuantity = currentLittres - initialLittres;
       if (additionalQuantity > 0) {
-        recordNewConsumption(additionalQuantity);
+        recordNewConsumption(additionalQuantity, currentLittres);
       }
       setIsChanging(false);
     }
   };
 
   const recordNewConsumption = async (quantity) => {
+    console.log('recordNewConsumption', quantity);
     try {
       const response = await recordConsumption(quantity);
       if (response.status === 201) {
         console.log('success');
+        setLittres(currentLittres);
       } else {
         // TODO : manage errors
       }
@@ -91,8 +80,8 @@ export const WaterBottle = ({ signOut, toggleScroll }) => {
 
   const cancel = () => {
     setIsChanging(false);
-    setLittres(initialLittres);
-    riveRef.current?.setInputState('percentage', 'percentage', (initialLittres));
+    setCurrentLittres(initialLittres);
+    riveRef.current?.setInputState('controllable', 'percentage', (initialLittres * 100 / dailyGoal));
     toggleScroll(true);
   };
 
@@ -104,40 +93,58 @@ export const WaterBottle = ({ signOut, toggleScroll }) => {
     });
   };
 
-  const exit = async () => {
-    await SecureStore.deleteItemAsync('currentStep');
-    signOut();
-  };
-
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.stepTitle}>Ton objectif aujourd'hui</Text>
       <Text style={styles.subtitle}>{formatDate()}</Text>
       <View style={styles.stats}>
-        <Text style={styles.bigTitle}>{littres.toFixed(2)}L</Text>
+        <Text style={styles.bigTitle}>{currentLittres.toFixed(2)}L</Text>
         <Text style={styles.subtitle}>sur</Text>
-        <Text style={styles.bigTitle}>{dailyGoal ? dailyGoal.toFixed(2) : '0.0'}L</Text>
+        <Text style={styles.bigTitle}>
+          {dailyGoal ? dailyGoal.toFixed(2) : '0.00'}L
+        </Text>
       </View>
-      <ObjectifBar dailyGoal={dailyGoal} totalConsumption={littres} />
+      <ObjectifBar dailyGoal={dailyGoal} totalConsumption={currentLittres} />
       <View style={styles.animationAndControls}>
         <Rive
           load
           ref={riveRef}
           stateMachineName='controllable'
           resourceName="blue_water4"
-          style={{ width: 350, height: 350 }}
+          style={{ width: 350, height: 453 }}
+          onStateChanged={(stateMachineName, stateName) => {
+            console.log(
+              'onStateChanged: ',
+              'stateMachineName: ',
+              stateMachineName,
+              'stateName: ',
+              stateName
+            );
+          }}
         />
         <View style={styles.controls}>
           {isChanging ? (
-            <><Pressable onPressIn={() => handlePressIn(0.01)} onPressOut={handlePressOut} style={styles.button}>
+            <>
+            <Pressable onPress={() => handlePressIn(0.10)} style={styles.button}>
               <AntDesign name="plus" size={24} color="black" />
-            </Pressable><Pressable onPressIn={() => handlePressIn(-0.01)} onPressOut={handlePressOut} style={styles.button}>
-                <AntDesign name="minus" size={24} color="black" />
-              </Pressable></>
+            </Pressable>
+              <View style={styles.glass}>
+                <Image source={glassWater} style={styles.image} resizeMode="contain" />
+                <View style={styles.animationText}>
+                  <Text style={styles.smallText}>X{drops}</Text>
+                </View>
+              </View>
+            <Pressable onPress={() => handlePressIn(-0.10)} style={styles.button}>
+              <AntDesign name="minus" size={24} color="black" />
+            </Pressable>
+            </>
           ) : (
-            <Pressable onPress={handlePress} style={styles.button}>
-            <AntDesign name="plus" size={24} color="black" />
-          </Pressable>
+            <>
+              <Pressable onPress={handlePress} style={styles.button}>
+                <AntDesign name="plus" size={24} color="black" />
+              </Pressable>
+              <Text style={styles.subtitle}>Ajouter</Text>
+            </>
           )}
         </View>
       </View>
@@ -147,17 +154,15 @@ export const WaterBottle = ({ signOut, toggleScroll }) => {
         <CustomButton style={styles.btn} text="Valider" onPress={handlePress} />
       </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignContent: 'center',
+    
   },
   stepTitle: {
-    marginTop: 58,
     textAlign: 'center',
     fontSize: 24,
     fontFamily: 'Poppins_600SemiBold',
@@ -171,15 +176,17 @@ const styles = StyleSheet.create({
   },
   controls: {
     position: 'absolute',
-    right: 20,
-    height: 350,
-    justifyContent: 'space-around',
+    height: 300,
+    alignItems: 'center',
+    justifyContent: 'center',
+    right: wp('5%'),
+    gap: 20,
   },
   button: {
     backgroundColor: '#E0E0E0',
     padding: 10,
     borderRadius: 50,
-    marginBottom: 10,
+    marginHorizontal: 20,
   },
   buttonText: {
     color: 'white',
@@ -210,5 +217,22 @@ const styles = StyleSheet.create({
   },
   btn: {
     marginHorizontal: 10,
+  },
+  animationText: {
+    position: 'absolute',
+    alignItems: 'center',
+  },
+  glass: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  image: {
+    width: 85,
+    height: 85,
+  },
+  smallText: {
+    fontSize: 12,
+    fontFamily: 'Poppins_700Bold',
   },
 });

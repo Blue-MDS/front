@@ -46,7 +46,7 @@ export const PeriodSettingsScreen = () => {
           <Text>Fin</Text>
         </Pressable>    
       </View>
-      <View style={{backgroundColor: "#F1F1F1", alignItems: "center", justifyContent: "center", marginTop: 20}}>
+      <View style={{alignItems: "center", justifyContent: "center", marginTop: 20}}>
           <TimerPicker
               initialHours={period.start.getHours()}
               initialMinutes={period.start.getMinutes()}

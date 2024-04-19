@@ -92,8 +92,8 @@ export const HomeTeamScreen = () => {
   
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Bienvenue chez les Safe</Text>
-      <Text style={styles.subtitle}>Alors comme ça, tu aimes redécouvrir les classiques! L’arôme Menthe-la-Jolie sera parfait pour toi.</Text>
+      <Text style={styles.title}>Dans quelques temps...</Text>
+      <Text style={styles.subtitle}>Tu pourras personnaliser les détails de ta team !</Text>
       <View style={styles.cardsContainer}>
         {cards.map((image, index) => (
           <CustomCard 

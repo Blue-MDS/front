@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
@@ -6,8 +6,11 @@ import { QuizOptions } from './QuestionsStep';
 import LottieView from 'lottie-react-native';
 import { TeamScreen } from './Team';
 import Constants from 'expo-constants';
+import { TeamContext } from '../../contexts/QuizContext';
+import { set } from 'date-fns';
 
-const apiUrl = Constants.expoConfig.extra.expoPublicApiUrl;;
+const apiUrl = Constants.expoConfig.extra.expoPublicApiUrl;
+
 
 export const QuizComponent = ({ navigation }) => {
   const [questions, setQuestions] = useState([]);
@@ -16,7 +19,7 @@ export const QuizComponent = ({ navigation }) => {
   const [userAnswers, setUserAnswers] = useState([]);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [teamAssigned, setTeamAssigned] = useState(false);
+  const { hasTeam, setHasTeam } = useContext(TeamContext);
 
   const backgroundColors = ['#B2D6FB', '#F7D6C9', '#C5F4E1', '#D6DAEA', '#FBEDC6', '#F5CCDF']
   const currentColorIndex = currentQuestionIndex % backgroundColors.length;
@@ -33,25 +36,13 @@ export const QuizComponent = ({ navigation }) => {
   );
 
   useEffect(() => {
-    console.log(apiUrl);
-    const initializeQuiz = async () => {
-      const storedTeam = await SecureStore.getItemAsync('userTeam');
-      if (storedTeam) {
-        setTeamAssigned(true);
-      } else {
-        verifyUserTeam();
-      }
-    };
-
-    initializeQuiz();
+    fetchQuestions();
   }, []);
 
   const fetchQuestions = async () => {
-    console.log('fetch questions');
     const token = await SecureStore.getItemAsync('userToken');
     try {
       const response = await axios.get(`${apiUrl}/quiz/questions`, { headers: { token: token }});
-      console.log(response.data);
       setQuestions(response.data);
       if (response.data.length > 0) {
         fetchAnswersForQuestion(response.data[0].id);
@@ -65,7 +56,7 @@ export const QuizComponent = ({ navigation }) => {
     const token = await SecureStore.getItemAsync('userToken');
     try {
       const response = await axios.get(`${apiUrl}/quiz/answers/${questionId}`, { headers: { token: token }});
-      console.log(response.data);
+      console.log('fetch responses' ,response.data);
       setAnswers(response.data);
     } catch (error) {
       console.error(error);
@@ -102,7 +93,7 @@ export const QuizComponent = ({ navigation }) => {
           assignTeam();
         }, 1500);
       } else {
-        console.error("Erreur lors de la soumission des réponses");
+        console.error(response.data.error);
         setIsLoading(false);
       }
     } catch (error) {
@@ -121,12 +112,9 @@ export const QuizComponent = ({ navigation }) => {
       if (response.status === 201) {
         console.log('Équipe assignée avec succès:', response.data);
         await SecureStore.setItemAsync('userTeam', JSON.stringify(response.data));
+        setHasTeam(true);
         setIsLoading(false);
-        setTeamAssigned(true);
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Team' }],
-        });
+        navigation.navigate('Team');
       } else {
         console.error("Erreur lors de l'assignation d'équipe");
         setIsLoading(false);
@@ -134,31 +122,6 @@ export const QuizComponent = ({ navigation }) => {
     } catch (error) {
       console.error("Erreur lors de l'assignation d'équipe", error);
       setIsLoading(false);
-    }
-  };
-
-  const verifyUserTeam = async () => {
-    const token = await SecureStore.getItemAsync('userToken');
-    if (token) {
-      try {
-        const response = await axios.get(`${apiUrl}/quiz/getUserTeam`, {
-          headers: { token: token }
-        });
-
-        if (response.data.hasTeam) {
-          console.log('L\'utilisateur a déjà une équipe:', response.data.team);
-          await SecureStore.setItemAsync('userTeam', JSON.stringify(response.data.team));
-          setTeamAssigned(true);
-        } else {
-          fetchQuestions();
-        }
-      } catch (error) {
-        if (error.response && error.response.status === 400) {
-          fetchQuestions();
-        } else {
-          console.error("Erreur lors de la vérification de l'équipe de l'utilisateur", error);
-        }
-      }
     }
   };
 
@@ -204,5 +167,6 @@ const styles = StyleSheet.create({
   optionsContainer: {
     position: 'absolute',
     bottom: 0,
+    width: '100%',
   },
 });
