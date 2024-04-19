@@ -72,47 +72,51 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const bootstrapAsync = async () => {
-      let userToken, isProfileComplete, isDailyGoalAccepted;
+      let userToken;
       try {
         userToken = await SecureStore.getItemAsync('userToken');
-        isProfileComplete = await SecureStore.getItemAsync('userInfo') ? JSON.parse(await SecureStore.getItemAsync('userInfo')).profile_complete : false;
-        isDailyGoalAccepted = await SecureStore.getItemAsync('isDailyGoalAccepted') === 'true';
+        const userInfo = await SecureStore.getItemAsync('userInfo');
+        const profileComplete = userInfo ? JSON.parse(userInfo).profile_complete : false;
+        dispatch({ type: 'RESTORE_TOKEN', token: userToken });
+        if (profileComplete) {
+          dispatch({ type: 'COMPLETE_PROFILE' });
+        }
       } catch (e) {
         console.error(e);
       }
-      dispatch({ type: 'RESTORE_TOKEN', token: userToken });
-      if (isProfileComplete) dispatch({ type: 'COMPLETE_PROFILE' });
-      if (isDailyGoalAccepted) dispatch({ type: 'ACCEPT_DAILY_GOAL' });
     };
-
     bootstrapAsync();
   }, []);
+  
 
   const authContext = useMemo(() => ({
-    signIn: async (data) => {
+    signIn: async (data, navigation) => {
       try {
-        console.log(`${apiUrl}/users/login`);
         const response = await axios.post(`${apiUrl}/users/login`, data);
         await SecureStore.setItemAsync('userToken', response.data.token);
-        const userInfo = JSON.stringify(response.data.user);
-        await SecureStore.setItemAsync('userInfo', userInfo);
+        await SecureStore.setItemAsync('userInfo', JSON.stringify(response.data.user));
         dispatch({ type: 'SIGN_IN', token: response.data.token });
-        console.log(userInfo);
-        if (userInfo.profile_complete) {
+        if (response.data.user.profile_complete) {
           dispatch({ type: 'COMPLETE_PROFILE' });
         }
+        const nextScreen = response.data.user.profile_complete ? 'HomeTabs' : 'ProfileSteps';
+        navigation.navigate(nextScreen);
       } catch (error) {
-        console.log(error.response.data.message);
-        dispatch({ type: 'ERROR', error: error.response.data.message });
+        console.log(error);
+        const errorMessage = error.response?.data.message || "An unknown error occurred";
+        dispatch({ type: 'ERROR', error: errorMessage });
       }
     },
+    
     signOut: async () => {
       await SecureStore.deleteItemAsync('dailyGoal');
+      await SecureStore.deleteItemAsync('dailyGoalDate');
       await SecureStore.deleteItemAsync('userToken')
       await SecureStore.deleteItemAsync('profileIsCompleted');
       await SecureStore.deleteItemAsync('isDailyGoalAccepted');
       await SecureStore.deleteItemAsync('currentStep');
       await SecureStore.deleteItemAsync('userTeam');
+      await SecureStore.deleteItemAsync('userInfo');
       dispatch({ type: 'SIGN_OUT' })
     },
     signUp: async (data) => {

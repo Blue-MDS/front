@@ -26,7 +26,10 @@ export const WeightSelector = ({ weight, onWeightChange }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.selectedWeight}>{`${weight} kg`}</Text>
+      <Text>
+        <Text style={styles.selectedWeight}>{`${weight}`}</Text>
+        <Text style={styles.unity}>kg</Text>
+      </Text>
       <View style={styles.rulerContainer}>
         <ScrollView
           ref={scrollViewRef}
@@ -93,6 +96,11 @@ const styles = StyleSheet.create({
     height: 54,
     backgroundColor: 'black',
   },
+  unity: {
+    fontSize: 20,
+    fontFamily: 'Poppins_500Medium',
+    marginLeft: 10,
+  },
 
   buttonsContainer: {
     flexDirection: 'row',
@@ -114,6 +122,13 @@ const styles = StyleSheet.create({
     width: 2,
     height: 100,
     backgroundColor: 'black',
+  },
+  markText: {
+    fontSize: 14,
+    fontFamily: 'Poppins_400Regular',
+    color: '#999A9A',
+    paddingTop: 5,
+    width: 30,
   },
 });
 

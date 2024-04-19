@@ -74,140 +74,135 @@ export const Register = ({route, navigation}) => {
   }
 
   return (
-    <SafeAreaView style={styles.view}>
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={1}>
-        <Entypo name="chevron-thin-left" size={24} color="black" />
-      </TouchableOpacity>     
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
-        <View style={{marginBottom: 32, marginTop: 12}}>
-          <Text style={styles.title}>{currentStep < totalSteps ? 'Inscription' : 'Verification email'}</Text>
-          {currentStep === totalSteps && (<Text style={styles.subtitle}>Saisis le code à 4 chiffres que nous venons de t’envoyer par email</Text>)}
-        </View>
-      {currentStep === 1 && (
-        <>
-          <Controller
-            name="email"
-            control={control}
-            rules={{
-              required: 'Email requis',
-              pattern: {
-                value: /\S+@\S+\.\S+/,
-                message: 'Adresse email incorrecte'
-              }
-            }}
-            render={({ field: { onChange, value } }) => (
-              <>
-              <TextInput
-                placeholder="Email"
-                style={[styles.input, {borderColor: errors.email ? '#DA5552' : '#E1E1E1'}]}
-                keyboardType='email-address'
-                autoCapitalize='none'
-                onChangeText={onChange}
-                value={value} />
-                {errors.email && <Text style={styles.errorMessage}>{errors.email.message}</Text>}
-                </>
-            )}
-          />
-          <Controller
-            name="password"
-            control={control}
-            rules={{ required: 'Mot de passe requis' }}
-            render={({ field: { onChange, value } }) => (
-              <>
-              <View style={[styles.input, {borderColor: errors.password ? '#DA5552' : '#E1E1E1'}]}>
-                <TextInput
-                  placeholder="Password"
-                  style={{ flex: 1 }}
-                  secureTextEntry={!showPassword}
-                  onChangeText={onChange}
-                  value={value} />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  activeOpacity={1}
-                >
-                  <Ionicons
-                    name={showPassword ? "eye-off-outline" : "eye-outline"}
-                    size={24}
-                    color="black" />
-                </TouchableOpacity>
-              </View>
-              {errors.password && <Text style={styles.errorMessage}>{errors.password.message}</Text>}
-              </>
-            )} 
-          />
-          <Controller
-            control={control}
-            name="termsAccepted"
-            rules={{ required: 'You must accept the terms and conditions' }}
-            render={({ field: { onChange, value } }) => (
-              <View style={styles.checkboxContainer}>
-                <Checkbox
-                  value={value}
-                  onValueChange={onChange}
-                  style={styles.checkbox}
-                  color={value ? 'black' : undefined}
-                />
-                <Text style={styles.checkboxText}>En t’inscrivant, tu acceptes nos conditions d'utilisation et notre politique de confidentialité.</Text>
-              </View>
-            )}
-          />
-        </>
-      )}
-
-      {currentStep === 2 && (
-        <>
-          <Controller
-            control={control}
-            name="code"
-            rules={{ required: true, validate: value => value && value.length === CELL_COUNT }}
-            render={({ field: { onChange } }) => (
-              <CodeField
-                style={styles.codeInputContainer}
-                ref={ref}
-                {...props}
-                value={codeValue.join('')}
-                onChangeText={(text) => {
-                  setCodeValue(text.split(''));
-                  onChange(text.split(''));
+        <View>
+          <View style={{marginBottom: 32, marginTop: 12}}>
+            <Text style={styles.title}>{currentStep < totalSteps ? 'Inscription' : 'Verification email'}</Text>
+            {currentStep === totalSteps && (<Text style={styles.subtitle}>Saisis le code à 4 chiffres que nous venons de t’envoyer par email</Text>)}
+          </View>
+          {currentStep === 1 && (
+            <>
+              <Controller
+                name="email"
+                control={control}
+                rules={{
+                  required: 'Email requis',
+                  pattern: {
+                    value: /\S+@\S+\.\S+/,
+                    message: 'Adresse email incorrecte'
+                  }
                 }}
-                cellCount={CELL_COUNT}
-                rootStyle={styles.codeFieldRoot}
-                keyboardType="number-pad"
-                renderCell={({ index, symbol, isFocused }) => (
-                  <View
-                    key={index}
-                    style={[styles.cell, isFocused && styles.focusCell]}
-                    onLayout={getCellOnLayoutHandler(index)}>
-                    <Text style={styles.cellText}>
-                      {symbol ? symbol : isFocused ? <Cursor /> : null}
-                    </Text>
+                render={({ field: { onChange, value } }) => (
+                  <>
+                  <TextInput
+                    placeholder="Email"
+                    style={[styles.input, {borderColor: errors.email ? '#DA5552' : '#E1E1E1'}]}
+                    keyboardType='email-address'
+                    autoCapitalize='none'
+                    onChangeText={onChange}
+                    value={value} />
+                    {errors.email && <Text style={styles.errorMessage}>{errors.email.message}</Text>}
+                    </>
+                )}
+              />
+              <Controller
+                name="password"
+                control={control}
+                rules={{ required: 'Mot de passe requis' }}
+                render={({ field: { onChange, value } }) => (
+                  <>
+                  <View style={[styles.input, {borderColor: errors.password ? '#DA5552' : '#E1E1E1'}]}>
+                    <TextInput
+                      placeholder="Password"
+                      style={{ flex: 1 }}
+                      secureTextEntry={!showPassword}
+                      onChangeText={onChange}
+                      value={value} />
+                    <TouchableOpacity
+                      onPress={() => setShowPassword(!showPassword)}
+                      activeOpacity={1}
+                    >
+                      <Ionicons
+                        name={showPassword ? "eye-off-outline" : "eye-outline"}
+                        size={24}
+                        color="black" />
+                    </TouchableOpacity>
+                  </View>
+                  {errors.password && <Text style={styles.errorMessage}>{errors.password.message}</Text>}
+                  </>
+                )} 
+              />
+              <Controller
+                control={control}
+                name="termsAccepted"
+                rules={{ required: 'You must accept the terms and conditions' }}
+                render={({ field: { onChange, value } }) => (
+                  <View style={styles.checkboxContainer}>
+                    <Checkbox
+                      value={value}
+                      onValueChange={onChange}
+                      style={styles.checkbox}
+                      color={value ? 'black' : undefined}
+                    />
+                    <Text style={styles.checkboxText}>En t’inscrivant, tu acceptes nos conditions d'utilisation et notre politique de confidentialité.</Text>
                   </View>
                 )}
               />
-            )}
-          />
-          <View style={{marginTop: 32, alignItems: 'center'}}>
-            <Text style={{color: '#999A9A', fontFamily: 'Poppins_400Regular'}}>Tu n’as pas reçu de code ?</Text>
-            <Text style={{color: 'black', fontFamily: 'Poppins_600SemiBold'}} onPress={reSendVerificationCode}>Renvoyer le code</Text>
-          </View>
-        </>
-      )}
-      {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
-      <CustomButton disabled={!isValid} text={currentStep < totalSteps ? 'Valider' : 'Sign Up'} onPress={handleSubmit(onSubmit)} />
+            </>
+          )}
+
+          {currentStep === 2 && (
+            <>
+              <Controller
+                control={control}
+                name="code"
+                rules={{ required: true, validate: value => value && value.length === CELL_COUNT }}
+                render={({ field: { onChange } }) => (
+                  <CodeField
+                    style={styles.codeInputContainer}
+                    ref={ref}
+                    {...props}
+                    value={codeValue.join('')}
+                    onChangeText={(text) => {
+                      setCodeValue(text.split(''));
+                      onChange(text.split(''));
+                    }}
+                    cellCount={CELL_COUNT}
+                    rootStyle={styles.codeFieldRoot}
+                    keyboardType="number-pad"
+                    renderCell={({ index, symbol, isFocused }) => (
+                      <View
+                        key={index}
+                        style={[styles.cell, isFocused && styles.focusCell]}
+                        onLayout={getCellOnLayoutHandler(index)}>
+                        <Text style={styles.cellText}>
+                          {symbol ? symbol : isFocused ? <Cursor /> : null}
+                        </Text>
+                      </View>
+                    )}
+                  />
+                )}
+              />
+              <View style={{marginTop: 32, alignItems: 'center'}}>
+                <Text style={{color: '#999A9A', fontFamily: 'Poppins_400Regular'}}>Tu n’as pas reçu de code ?</Text>
+                <Text style={{color: 'black', fontFamily: 'Poppins_600SemiBold'}} onPress={reSendVerificationCode}>Renvoyer le code</Text>
+              </View>
+            </>
+          )}
+          {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
+        </View>
+      <CustomButton style={styles.button} disabled={!isValid} text={currentStep < totalSteps ? 'Valider' : "M'inscrire"} onPress={handleSubmit(onSubmit)} />
       </KeyboardAvoidingView>
-    </SafeAreaView>
   );
 }
 
 
 const styles = StyleSheet.create({
-  view: {
-    flex: 1,
-    marginTop: 80,
-    marginHorizontal: 30
-  },
   container: {
+    marginTop: 80,
+    marginHorizontal: 30,
     flex: 1,
+    justifyContent: 'space-between',
   },
   title: {
     fontFamily: 'Poppins_600SemiBold',
@@ -218,6 +213,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     fontFamily: 'Poppins_400Regular',
+    color: '#505050',
     textAlign: 'center',
     marginTop: 4
   },
@@ -275,6 +271,7 @@ const styles = StyleSheet.create({
   checkboxContainer: {
     marginTop: 32,
     flexDirection: 'row',
+    paddingRight: 20,
     gap: 12
   },
   checkbox: {
@@ -284,5 +281,11 @@ const styles = StyleSheet.create({
   checkboxText: {
     fontSize: 12,
     fontFamily: 'Poppins_400Regular'
-  }
+  },
+  button: {
+    bottom: 0,
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
 });

@@ -1,17 +1,20 @@
 import React, { useRef, useState, useEffect, useContext } from 'react';
+import { useRoute } from '@react-navigation/native';
 import { StyleSheet, View, Text, SafeAreaView, TextInput } from 'react-native';
 import Rive from 'rive-react-native';
 import { AuthContext } from '../contexts/AuthContext';
-import { fetchDailyGoal } from '../services/waterService';
 import CustomButton from '../components/Button';
 import CustomButtonPass from '../components/ButtonPass'
 import { CustomModal } from '../components/Modal';
 import * as SecureStore from 'expo-secure-store';
 import { useForm, Controller, set } from "react-hook-form";
 import { updateDailyGoal } from '../services/waterService';
+import { WaterContext } from '../contexts/ConsumptionContext';
 
 export const DailyGoalConfirmation = ({ navigation }) => {
-  const [dailyGoal, setDailyGoal] = useState(null);
+  const route = useRoute();
+  const { fromSettings = false } = route.params || {};
+  const { setDailyGoal, dailyGoal } = useContext(WaterContext);
   const riveRef = useRef(null);
   const { acceptDailyGoal } = useContext(AuthContext);
   const [modalVisible, setModalVisible] = useState(false);
@@ -21,21 +24,13 @@ export const DailyGoalConfirmation = ({ navigation }) => {
     },
   });
 
-  const handlePlay = () => {
-    console.log('play');
-    riveRef.current?.setInputState(
-      'default',
-      'percentage',
-      100,
-    );
-  };
-
   const updateGoal = async (data) => {
     try {
-      console.log(data.amount);
-      const response = await updateDailyGoal(data.amount);
+      const amountToSend = data.amount.replace(',', '.');
+      const response = await updateDailyGoal(parseFloat(amountToSend));
       if (response.status === 201) {
-        setDailyGoal(data.amount);
+        setDailyGoal(parseFloat(data.amount));
+        console.log('daily goal', data.amount.toString());
         await SecureStore.setItemAsync('dailyGoal', data.amount.toString());
         setModalVisible(!modalVisible);
       }
@@ -47,47 +42,13 @@ export const DailyGoalConfirmation = ({ navigation }) => {
 
   const formatInputValue = (value) => {
     let formattedValue = value.replace(/[^0-9,]/g, '');
-    if (formattedValue.length > 1 && !formattedValue.includes(',')) {
-      formattedValue = formattedValue.slice(0, 1) + '.' + formattedValue.slice(1);
-    }
-    const parts = formattedValue.split('.');
+    const parts = formattedValue.split(',');
     if (parts.length > 2) {
-      formattedValue = parts[0] + '.' + parts.slice(1).join('');
+      formattedValue = parts[0] + ',' + parts.slice(1).join('');
     }
     setValue('amount', formattedValue);
     return formattedValue;
-  };
-
-
-  useEffect(() => {
-    const initialize = async () => {
-      try {
-        const today = new Date().toLocaleDateString();
-        const dailyGoalDate = await SecureStore.getItemAsync('dailyGoalDate');
-        const storedDailyGoal = await SecureStore.getItemAsync('dailyGoal');
-        console.log(dailyGoalDate, today, storedDailyGoal);
-        if (dailyGoalDate === today && storedDailyGoal !== null){
-          setDailyGoal(storedDailyGoal);
-          return;
-        } else {
-          console.log('toto');
-          const response = await fetchDailyGoal();
-          if (response.data.length) {
-            setDailyGoal(response.data[0].goal_quantity);
-            await SecureStore.setItemAsync('dailyGoal', response.data[0].goal_quantity.toString());
-            await SecureStore.setItemAsync('dailyGoalDate', today);
-          } else {
-            console.log('Erreur lors de la récupération du dailyGoal');
-          }
-        }
-        
-      } catch (error) {
-        console.error('Erreur lors de la récupération de l\'objectif quotidien:', error);
-      }
-    };
-
-    initialize();
-  }, []);
+};
 
   const goHome = async () => {
     try {
@@ -101,7 +62,7 @@ export const DailyGoalConfirmation = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Ton objectif aujourd'hui</Text>
-      <Text style={styles.subtitle}>{dailyGoal}L est le meilleur choix pour toi par rapport à tes besoins</Text>
+      <Text style={styles.subtitle}>{dailyGoal.toFixed(2)}L est le meilleur choix pour toi par rapport à tes besoins</Text>
       <View style={styles.animationContainer}>
         <Rive
           ref={riveRef}
@@ -111,12 +72,15 @@ export const DailyGoalConfirmation = ({ navigation }) => {
           style={{ width: 141, maxHeight: 450 }}
         />
         <View style={styles.animationText}>
-          <Text style={styles.indicator}>{dailyGoal}</Text>
+          <Text style={styles.indicator}>{dailyGoal.toFixed(2)}</Text>
         </View>
       </View>
       <View style={styles.btn}>
-        <CustomButton text="Commencer" onPress={goHome} />
-        <CustomButtonPass text="Modifier l'objectif" onPress={() => setModalVisible(!modalVisible)}  />
+      {!fromSettings && <CustomButton text="Commencer" onPress={goHome} />}
+        {!fromSettings ? 
+        <CustomButtonPass text="Modifier l'objectif" onPress={() => setModalVisible(!modalVisible)}  /> 
+        : <CustomButton text="Modifier l'objectif" onPress={() => setModalVisible(!modalVisible)}  />
+        }
       </View>
       <CustomModal isVisible={modalVisible}>
         <Text style={styles.title}>Modifier l'objectif</Text>
@@ -126,8 +90,8 @@ export const DailyGoalConfirmation = ({ navigation }) => {
           render={({ field: { onChange, value } }) => (
             <TextInput
               style={styles.input}
-              placeholder="0.00L"
-              keyboardType="decimal-pad"
+              placeholder="0,00L"
+              keyboardType="numbers-and-punctuation"
               onChangeText={(text) => onChange(formatInputValue(text))}
               value={value}
               maxLength={5}
@@ -170,6 +134,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     fontFamily: 'Poppins_400Regular',
+    color: '#505050',
     textAlign: 'center',
     marginTop: 4,
     maxWidth: 250

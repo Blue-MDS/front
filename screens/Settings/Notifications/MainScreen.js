@@ -6,6 +6,7 @@ import {
   Switch,
   SectionList,
   TouchableOpacity,
+  SafeAreaView
 } from 'react-native';
 import { format } from 'date-fns';
 import { useNotificationSettings } from '../../../contexts/NotificationContext';
@@ -64,7 +65,7 @@ export const NotificationsMainScreen = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <SectionList
       sections={DATA}
       keyExtractor={(item) => item.key}
@@ -73,7 +74,7 @@ export const NotificationsMainScreen = () => {
         <Text style={styles.header}>{title}</Text>
       )} />
       <CustomButton text="Sauvegarder" onPress={saves} />
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     paddingTop: 20,
-    paddingHorizontal: 20,
+    marginHorizontal: 20,
   },
   item: {
     flexDirection: 'row',

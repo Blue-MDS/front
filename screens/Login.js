@@ -1,4 +1,4 @@
-import { View, TextInput, TouchableOpacity, StyleSheet, Text, KeyboardAvoidingView, SafeAreaView } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, Text, KeyboardAvoidingView, SafeAreaView, Platform } from 'react-native';
 import { useState, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import CustomButton from '../components/Button';
@@ -17,12 +17,8 @@ export const Login = ({navigation}) => {
     },
   })
   const onSubmit = async (data) => {
-    await signIn(data)
-    const nextScreen = route.params?.nextScreen;
-      if (nextScreen) {
-        navigation.navigate(nextScreen);
-      }
-  }
+    await signIn(data, navigation);
+  };
 
   return (
     <SafeAreaView style={styles.view}>

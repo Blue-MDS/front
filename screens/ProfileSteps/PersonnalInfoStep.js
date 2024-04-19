@@ -1,10 +1,11 @@
-import { View, TextInput, TouchableOpacity, StyleSheet, Text, KeyboardAvoidingView } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, Text, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState, useContext } from 'react';
 import { useForm, Controller } from "react-hook-form"
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 export const PersonnalInfo = ({control}) => {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [formattedDate, setFormattedDate] = useState('');
 
   const showDatePicker = () => {
     setDatePickerVisibility(true);
@@ -15,9 +16,16 @@ export const PersonnalInfo = ({control}) => {
   };
 
   const handleConfirm = (date, onChange) => {
+    const formattedDate = date.toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
     onChange(date);
+    setFormattedDate(formattedDate);
     hideDatePicker();
   };
+
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.inputContainer}>
       <Controller
@@ -57,7 +65,7 @@ export const PersonnalInfo = ({control}) => {
                 placeholder="Date de Naissance"
                 style={styles.input}
                 editable={false}
-                value={value ? value.toISOString().split('T')[0] : ''}
+                value={formattedDate}
                 onPressIn={showDatePicker}
               />
             </TouchableOpacity>
@@ -77,10 +85,10 @@ const styles = StyleSheet.create({
   inputContainer: {
     flex: 1,
     justifyContent: "center", 
-    margin: 10
+    margin: 30
   },
   input: {
-    height: 40,
+    height: 60,
     borderColor: '#E1E1E1',
     borderWidth: 1,
     paddingLeft: 10,

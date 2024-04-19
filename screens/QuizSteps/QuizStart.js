@@ -23,7 +23,9 @@ export const QuizStart = ({navigation}) => {
       <View style={styles.textContainer}>
         <Text style={styles.title}>De quelle Blue Team fais-tu parti ?</Text>
         <Text style={styles.subtitle}>Réponds à 6 questions pour retrouver les tiens parmi les Bluetiz et avoir les tips personnalisés</Text>
-        <CustomButton style={styles.button} text="Faire le quiz" onPress={() => navigation.navigate('Questions')} />
+      </View>
+      <View style={styles.button}>
+        <CustomButton text="Faire le quiz" onPress={() => navigation.navigate('Questions')} />
       </View>
     </View>
   );
@@ -32,6 +34,8 @@ export const QuizStart = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'white',
+    alignItems: 'center',
   },
   video: {
     alignSelf: 'center',
@@ -62,6 +66,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   button: {
-    marginTop: 20,
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    paddingHorizontal: 20,
   },
 });

@@ -17,7 +17,7 @@ export const FrequencySettingsScreen = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Fréquence</Text>
       <Text style={styles.subtitle}>Profite de ta Poz’Plaisir toutes les : </Text>
-      <View style={{backgroundColor: "#F1F1F1", alignItems: "center", justifyContent: "center", marginTop: 20}}>
+      <View style={{alignItems: "center", justifyContent: "center", marginTop: 20}}>
           <TimerPicker
               onDurationChange={handleTimeSelected}
               ref={timerPickerRef}

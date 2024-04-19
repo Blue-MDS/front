@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { View, SafeAreaView, StyleSheet, Text, Modal } from 'react-native';
+import { View, SafeAreaView, StyleSheet, Text, Modal, Image } from 'react-native';
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import CustomButton from '../../components/Button';
 import CustomButtonPass from '../../components/ButtonPass'
 import ProgressBar from '../../components/ProgressBar';
@@ -14,9 +15,10 @@ import * as SecureStore from 'expo-secure-store';
 import { AuthContext } from '../../contexts/AuthContext';
 import { updateUser, setProfileComplete, fetchUser } from '../../services/userService';
 import Constants from 'expo-constants';
+import securityIcon from '../../assets/icons/security.png';
 
 const totalSteps = 5;
-const apiUrl = Constants.expoConfig.extra.expoPublicApiUrl;;
+const apiUrl = Constants.expoConfig.extra.expoPublicApiUrl;
 
 export const ProfileSteps = ({navigation}) => {
   const { signOut, completeProfile } = useContext(AuthContext);
@@ -34,7 +36,6 @@ export const ProfileSteps = ({navigation}) => {
 
   useEffect(() => {
     const fetchCurrentStep = async () => {
-      await completeProfile();
       // await SecureStore.deleteItemAsync('currentStep');
       const userInfo = await SecureStore.getItemAsync('userInfo');
       console.log(userInfo);
@@ -69,13 +70,16 @@ export const ProfileSteps = ({navigation}) => {
   }
 
   const onSubmit = async (data) => {
+    console.log(data);
     if (currentStep < totalSteps) {
       const nextStep = currentStep + 1;
       await SecureStore.setItemAsync('currentStep', JSON.stringify(nextStep));
       setCurrentStep(nextStep);
     } else {
     try {
+      console.log('data', data);
       const response = await updateUser(data);
+      console.log('response', response);
       if (response.status === 200) {
         const profileIsCompleted = await setProfileComplete();
         if (profileIsCompleted.data.isCompleted) {
@@ -86,12 +90,11 @@ export const ProfileSteps = ({navigation}) => {
           await createDailyGoal()
         }
       } else if (response.status === 400) {
-        console.log('error');
-        console.log('toto');
+        console.log(response.data);
         // TODO : manage errors
       }
     } catch (error) {
-      console.error(error);
+      console.error(error, 'error');
     }
     }
   };
@@ -100,10 +103,11 @@ export const ProfileSteps = ({navigation}) => {
     switch (currentStep) {
       case 1:
           return (
-            <>
-            <Text style={styles.stepTitle}>Qui es tu ?</Text>
-            <PersonnalInfo control={control}/>
-            </>
+            <View style={styles.container}>
+              <View style={[styles.background, {backgroundColor: '#FBEDC6'}]} />
+              <Text style={styles.stepTitle}>Qui es tu ?</Text>
+              <PersonnalInfo control={control}/>
+            </View>
           )
       case 2:
         return (
@@ -132,6 +136,7 @@ export const ProfileSteps = ({navigation}) => {
               control={control}
               render={({ field: { onChange, value } }) => (
                 <HeightSelector
+                  defaultHeight={177}
                   height={value}
                   onHeightChange={(newHeight) => {
                     onChange(newHeight);
@@ -145,7 +150,8 @@ export const ProfileSteps = ({navigation}) => {
         );
       case 4:
         return (
-          <>
+          <View style={styles.container}>
+            <View style={[styles.background, {backgroundColor: '#C5F4E1'}]} />
             <Text style={styles.stepTitle}>Quel est ton niveau d'activité physique ?</Text>
             <Controller
               control={control}
@@ -158,11 +164,12 @@ export const ProfileSteps = ({navigation}) => {
               name="physical_activity"
               rules={{ required: true }}
             />
-          </>
+          </View>
         );
         case 5:
         return (
-          <>
+          <View style={styles.container}>
+            <View style={[styles.background, {backgroundColor: '#D6DAEA'}]} />
             <Text style={styles.stepTitle}>As-tu l’un de ces problèmes de santé ?</Text>
             <Controller
               control={control}
@@ -175,7 +182,7 @@ export const ProfileSteps = ({navigation}) => {
               name="health_issues"
               rules={{ required: true }}
             />
-          </>
+          </View>
         );        
       default:
         return null;
@@ -183,7 +190,7 @@ export const ProfileSteps = ({navigation}) => {
   };
 
   return (
-    <SafeAreaView style={styles.centeredView}>
+    <View style={styles.centeredView}>
       {renderStep()}
       <Modal
         animationType="fade"
@@ -195,6 +202,14 @@ export const ProfileSteps = ({navigation}) => {
       >
         <View style={styles.overlay}>
           <View style={styles.modalView}>
+            <Image
+              source={securityIcon}
+              style={{
+                width: 32,
+                height: 32,
+                resizeMode: 'contain'
+              }}
+            />
             <Text style={styles.title}>Tes infos personnelles</Text>
             <Text style={styles.subtitle}>
               Elles seront utilisées seulement{"\n"} pour personnaliser ton hydratation.
@@ -203,12 +218,14 @@ export const ProfileSteps = ({navigation}) => {
           </View>
         </View>
       </Modal>
-      <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
+      <View style={{paddingHorizontal: wp('10%')}}>
+        <ProgressBar currentStep={currentStep -1} totalSteps={totalSteps} />
+      </View>
       <View style={styles.buttonsContainer}>
         <CustomButtonPass text="Passer" onPress={() => setCurrentStep(currentStep - 1)} />
         <CustomButton text="Valider" onPress={handleSubmit(onSubmit)} />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -216,12 +233,15 @@ export const ProfileSteps = ({navigation}) => {
 const styles = StyleSheet.create({
   centeredView: {
     flex: 1,
-    marginBottom: 48
+    marginBottom: 48,
+    backgroundColor: 'white',
   },
   stepTitle: {
-    marginTop: 58,
+    marginTop: hp('10%'),
+    marginBottom: hp('8%'),
+    paddingHorizontal: wp('10%'),
     textAlign: 'center',
-    fontSize: 24,
+    fontSize: hp('3%'),
     fontFamily: 'Poppins_600SemiBold',
     color: '#1F1F1F'
   },
@@ -247,12 +267,12 @@ const styles = StyleSheet.create({
     elevation: 5
   },
   title: {
-    fontSize: 16,
+    fontSize: hp('2%'),
     marginBottom: 4,
     fontFamily: 'Poppins_700Bold'
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: hp('1.7%'),
     fontFamily: 'Poppins_400Regular',
     marginBottom: 32,
     textAlign: "center",
@@ -262,5 +282,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'white',
+  },
+  background: {
+    position: 'absolute',
+    top: 0,
+    width: wp('100%'),
+    height: hp('25%'),
+    zIndex: -1,
   },
 });

@@ -1,19 +1,28 @@
+import React, {useRef, useState, useContext} from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, Text } from 'react-native';
-import { useState, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import CustomButton from '../components/Button';
+import { Video, ResizeMode } from 'expo-av';
+
+import { Dimensions } from 'react-native';
+const screenHeight = Dimensions.get('window').height;
 
 export const OnBoardingScreen = ({ navigation }) => {
-
+  const video = React.useRef(null);
+  const [status, setStatus] = React.useState({});
   return (
   <View style={styles.view}>
-    <Text style={styles.title}>
-      <Text style={ {color: '#7C7C7C'} }>Bienvenue chez Blue, là où tout se passe dans </Text>
-      <Text style={ {color: 'black'}}>l’eau.</Text>
-    </Text>
+    <Video
+        source={require('../assets/onboarding.mp4')}
+        useNativeControls
+        resizeMode="cover"
+        shouldPlay
+        style={{ width: '100%', height: screenHeight / 2 }}
+        onPlaybackStatusUpdate={status => setStatus(() => status)}
+      />
     
     <View style={styles.buttonContainer}>
-      <CustomButton text="Commencer" onPress={() => navigation.navigate('Signup', { nextScreen: 'ProfileSteps'})} />
+      <CustomButton text="Commencer" onPress={() => navigation.navigate('OnboardingSwiper')} />
       <View style={styles.inlineContainer}>
         <Text style={styles.inlineText}>Déjà un compte ?</Text>
         <TouchableOpacity onPress={() => navigation.navigate('SignIn', { nextScreen: 'DailyGoalConfirmation'})}>
@@ -29,7 +38,8 @@ const styles = StyleSheet.create({
   view: {
     flex: 1,
     justifyContent: "center", 
-    margin: 30
+    margin: 30,
+    backgroundColor: 'white',
   },
   title: {
     fontSize: 32,
@@ -43,7 +53,6 @@ const styles = StyleSheet.create({
   },
   inlineContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
     marginTop: 10,
   },
@@ -52,6 +61,7 @@ const styles = StyleSheet.create({
   },
   inlineButtonText: {
     fontFamily: 'Poppins_600SemiBold',
-    color: 'blue',
+    color: '#1F1F1F',
+    textDecorationLine: 'underline',
   },
 });

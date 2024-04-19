@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, Pressable, ActivityIndicator } from 'react-native';
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import Constants from 'expo-constants';
@@ -56,7 +57,7 @@ export const HealthIssues = ({ selectedIssues, onSelect }) => {
       {data.map((card) => (
         <Pressable style={[
           styles.card, getCardStyle(card.health_issue)]}  key={card.health_issue} onPress={() =>handleSelectIssue(card.health_issue)}>
-          <Text style={[styles.title, {color: selectedIssues.includes(card.health_issue) ? 'white' : 'black'}]}>{card.health_issue}</Text>
+          <Text style={[styles.title, {color: selectedIssues.includes(card.health_issue) ? 'white' : 'black'}]}>{card.health_issue.charAt(0).toUpperCase() + card.health_issue.slice(1)}</Text>
         </Pressable>
       ))}
     </View>
@@ -65,18 +66,15 @@ export const HealthIssues = ({ selectedIssues, onSelect }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 65,
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 'auto',
+    paddingLeft: 25,
     gap: 24,
   },
   card: {
-    width: 170,
-    height: 64,
+    width: wp('40%'),
+    height: hp('8%'),
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 6,
@@ -92,16 +90,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
   },
   unselectedCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#EFEFEF',
   },
   title: {
     fontFamily: 'Poppins_500Medium',
-    fontSize: 20
+    fontSize: hp('2.2%'),
   },
-  subtitle: {
-    fontFamily: 'Poppins_400Regular',
-    color: '#474747',
-    fontSize: 14,
-    textAlign: 'center'
-  }
 });

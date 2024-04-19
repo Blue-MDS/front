@@ -3,6 +3,7 @@ import { View, Button, Text, StyleSheet } from 'react-native';
 import { WeightSelector } from '../../ProfileSteps/WeightStep';
 import { updateUser } from '../../../services/userService';
 import * as SecureStore from 'expo-secure-store';
+import CustomButton from '../../../components/Button';
 
 export const WeightModification = ({ route, navigation }) => {
   const { userInfo } = route.params;
@@ -22,7 +23,7 @@ export const WeightModification = ({ route, navigation }) => {
     <View style={styles.container}>
       <Text style={styles.stepTitle}>Quel est ton poids ?</Text>
       <WeightSelector weight={weight} onWeightChange={setWeight} />
-      <Button title="Sauvegarder" onPress={handleSave} />
+      <CustomButton style={styles.btn} text="Sauvegarder" onPress={handleSave} />
     </View>
   );
 };
@@ -33,10 +34,13 @@ const styles = StyleSheet.create({
     marginBottom: 48,
   },
   stepTitle: {
-    marginTop: 58,
+    marginTop: 100,
     textAlign: 'center',
     fontSize: 24,
     fontFamily: 'Poppins_600SemiBold',
     color: '#1F1F1F'
   },
+  btn: {
+    marginHorizontal: 20,
+  }
 });

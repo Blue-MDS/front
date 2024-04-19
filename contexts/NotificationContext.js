@@ -20,6 +20,7 @@ export const NotificationSettingsProvider = ({ children }) => {
   const [period, setPeriod] = useState({ start: new Date(), end: new Date() });
   const [frequency, setFrequency] = useState(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [expoPushToken, setExpoPushToken] = useState('');
   
 
   const apiUrl = Constants.expoConfig.extra.expoPublicApiUrl;
@@ -41,7 +42,7 @@ export const NotificationSettingsProvider = ({ children }) => {
       return;
     }
     const token = await Notifications.getExpoPushTokenAsync();
-    console.log(token);
+    setExpoPushToken()
     return token.data;
   }
 
